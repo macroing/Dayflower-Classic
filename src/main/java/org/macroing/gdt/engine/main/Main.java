@@ -165,9 +165,9 @@ public final class Main extends ConcurrentApplication implements KeyboardObserve
 		wickedDisplay.setWidthScale(Constants.getDefaultWidthScale());
 		wickedDisplay.setRenderingInRealtime(Constants.isRenderingInRealtime());
 		wickedDisplay.setResolution(Constants.getDefaultWidth(), Constants.getDefaultHeight());
-		wickedDisplay.setTitle("Macroing.org GDT Engine v.1.0.0 - Dayflower");
+		wickedDisplay.setTitle(Constants.getTitle());
 		wickedDisplay.configure();
-		wickedDisplay.addButton("Restart").getButton("Restart").setText("Restart").setLocation(10, 10).setVisible(true);
+//		wickedDisplay.addButton("Restart").getButton("Restart").setText("Restart").setLocation(10, 10).setVisible(true);
 	}
 	
 	private void doConfigureScene() {

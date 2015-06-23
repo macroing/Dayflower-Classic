@@ -25,6 +25,11 @@ final class Constants {
 	public static final int DEFAULT_WIDTH = 1024;
 	public static final int DEFAULT_WIDTH_SCALE_FOR_QUALITY = 1;
 	public static final int DEFAULT_WIDTH_SCALE_FOR_SPEED = 4;
+	public static final String ORGANIZATION_NAME = "Macroing.org";
+	public static final String PROJECT_CATEGORY_NAME = "GDT";
+	public static final String PROJECT_NAME_EXTERNAL = "Dayflower";
+	public static final String PROJECT_NAME_INTERNAL = "Engine";
+	public static final String VERSION = "0.1-beta";
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
@@ -72,6 +77,10 @@ final class Constants {
 	
 	public static int getDepthUntilProbabilisticallyTerminatingRay() {
 		return isRenderingInRealtime() ? 2 : 5;
+	}
+	
+	public static String getTitle() {
+		return String.format("%s %s %s v.%s - %s", ORGANIZATION_NAME, PROJECT_CATEGORY_NAME, PROJECT_NAME_INTERNAL, VERSION, PROJECT_NAME_EXTERNAL);
 	}
 	
 	public static void setRenderingInRealtime(final boolean isRenderingInRealtime) {
