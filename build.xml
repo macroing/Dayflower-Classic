@@ -3,8 +3,8 @@
 <!--The following properties should be specified by each project. Some of them are the same for all projects, whereas others are not.-->
 	<property name="java.source" value="1.8"/>
 	<property name="java.target" value="1.8"/>
-<!--<property name="project.class.main" value="[TYPE_FULLY_QUALIFIED_CLASS_NAME_HERE]"/>-->
-	<property name="project.version" value="1.0.0"/>
+	<property name="project.class.main" value="org.macroing.gdt.engine.main.Main"/>
+	<property name="project.version" value="0.1-beta"/>
 	<property name="root.directory" location="../.."/>
 	<property name="vendor.name" value="Macroing.org"/>
 	

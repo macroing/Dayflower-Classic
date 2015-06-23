@@ -1,5 +1,5 @@
-Macroing.org - Game Development Tools (GDT) - Dayflower (v. 1.0.0)
-==================================================================
+Dayflower (v. 0.1-beta)
+=======================
 Dayflower is a library and framework for creating your own game- and graphics applications. It's part of the Game Development Tools (GDT) project hosted by Macroing.org.
 
 Supported Features
