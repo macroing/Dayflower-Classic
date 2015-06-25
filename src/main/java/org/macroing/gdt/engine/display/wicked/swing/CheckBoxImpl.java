@@ -18,6 +18,8 @@
  */
 package org.macroing.gdt.engine.display.wicked.swing;
 
+import java.util.function.Consumer;
+
 import javax.swing.JCheckBox;
 
 import org.macroing.gdt.engine.display.wicked.CheckBox;
@@ -71,6 +73,16 @@ final class CheckBoxImpl extends CheckBox<CheckBoxImpl> {
 	public CheckBoxImpl setMovable(final boolean isMovable, final long key) {
 		if(authenticate(key)) {
 			ComponentUtilities.putClientProperty(this.jCheckBox, ComponentUtilities.KEY_MOVABLE, Boolean.valueOf(isMovable));
+		}
+		
+		return this;
+	}
+	
+	@Override
+	public CheckBoxImpl setOnSelectionChange(final Consumer<CheckBox<CheckBoxImpl>> consumer, final long key) {
+		if(authenticate(key)) {
+			ComponentUtilities.removeAllActionListeners(this.jCheckBox);
+			ComponentUtilities.addActionListener(this.jCheckBox, e -> consumer.accept(this));
 		}
 		
 		return this;

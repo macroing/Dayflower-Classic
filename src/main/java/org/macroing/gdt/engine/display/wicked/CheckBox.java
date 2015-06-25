@@ -18,6 +18,8 @@
  */
 package org.macroing.gdt.engine.display.wicked;
 
+import java.util.function.Consumer;
+
 /**
  * An abstract base-class for all check boxes.
  * 
@@ -53,6 +55,45 @@ public abstract class CheckBox<T extends CheckBox<T>> extends Component<T> {
 	 * @return the text currently set for this {@code CheckBox} instance
 	 */
 	public abstract String getText();
+	
+	/**
+	 * Attempts to set the {@code Consumer} that will be notified of selection changes.
+	 * <p>
+	 * Calling this method is equivalent to calling {@code checkBox.setOnSelectionChange(consumer, 0L)}.
+	 * <p>
+	 * If this {@code CheckBox} is currently locked, no state change will be performed.
+	 * <p>
+	 * If you need to force a state change, simply call {@code checkBox.setOnSelectionChange(consumer, checkBox.getKey())}.
+	 * <p>
+	 * Returned is the {@code CheckBox} instance itself, such that chaining can be performed.
+	 * <p>
+	 * If {@code consumer} is {@code null}, a {@code NullPointerException} may be thrown. But no guarantees can be made.
+	 * 
+	 * @param consumer the {@code Consumer} that will be notified of selection changes
+	 * @return the {@code CheckBox} instance itself
+	 * @throws NullPointerException thrown if, and only if, {@code consumer} is {@code null}
+	 */
+	public final T setOnSelectionChange(final Consumer<CheckBox<T>> consumer) {
+		return setOnSelectionChange(consumer, 0L);
+	}
+	
+	/**
+	 * Attempts to set the {@code Consumer} that will be notified of selection changes.
+	 * <p>
+	 * If this {@code CheckBox} is currently locked, no state change will be performed unless {@code key == checkBox.getKey()}.
+	 * <p>
+	 * If you need to force a state change, simply call {@code checkBox.setOnSelectionChange(isSelected, checkBox.getKey())}.
+	 * <p>
+	 * Returned is the {@code CheckBox} instance itself, such that chaining can be performed.
+	 * <p>
+	 * If {@code consumer} is {@code null}, a {@code NullPointerException} may be thrown. But no guarantees can be made.
+	 * 
+	 * @param consumer the {@code Consumer} that will be notified of selection changes
+	 * @param key the key to temporarily unlock and lock the {@code CheckBox}
+	 * @return the {@code CheckBox} instance itself, such that chaining can be performed
+	 * @throws NullPointerException thrown if, and only if, {@code consumer} is {@code null}
+	 */
+	public abstract T setOnSelectionChange(final Consumer<CheckBox<T>> consumer, final long key);
 	
 	/**
 	 * Attempts to set the selected state of this {@code CheckBox} instance.

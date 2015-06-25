@@ -373,8 +373,8 @@ public final class SwingWickedDisplay extends WickedDisplay {
 	 */
 	@Override
 	public void configure() {
-		final int width = getWidth() / getWidthScale();
-		final int height = getHeight() / getHeightScale();
+		final int width = isSuperSamplingWithDownScaling() && !isRenderingInRealtime() ? getWidth() * getWidthScale() : getWidth() / getWidthScale();
+		final int height = isSuperSamplingWithDownScaling() && !isRenderingInRealtime() ? getHeight() * getHeightScale() : getHeight() / getHeightScale();
 		
 		final BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		

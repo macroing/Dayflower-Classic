@@ -51,6 +51,10 @@ import org.macroing.gdt.engine.renderer.Renderer;
  * @author J&#246;rgen Lundgren
  */
 public final class Main extends ConcurrentApplication implements KeyboardObserver {
+	private static final String ID_CHECK_BOX_REALTIME_RENDERING = "CheckBox.RealtimeRendering";
+	
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	private final AtomicLong lastUpdate = new AtomicLong(0L);
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -161,13 +165,15 @@ public final class Main extends ConcurrentApplication implements KeyboardObserve
 	private void doConfigureDisplay() {
 		final
 		WickedDisplay wickedDisplay = WickedDisplay.class.cast(getDisplay());
+		wickedDisplay.setSuperSamplingWithDownScaling(Constants.isSuperSamplingWithDownScaling());
+		wickedDisplay.setRenderingInRealtime(Constants.isRenderingInRealtime());
 		wickedDisplay.setHeightScale(Constants.getDefaultHeightScale());
 		wickedDisplay.setWidthScale(Constants.getDefaultWidthScale());
-		wickedDisplay.setRenderingInRealtime(Constants.isRenderingInRealtime());
 		wickedDisplay.setResolution(Constants.getDefaultWidth(), Constants.getDefaultHeight());
 		wickedDisplay.setTitle(Constants.getTitle());
 		wickedDisplay.configure();
-//		wickedDisplay.addButton("Restart").getButton("Restart").setText("Restart").setLocation(10, 10).setVisible(true);
+		wickedDisplay.addCheckBox(ID_CHECK_BOX_REALTIME_RENDERING).getCheckBox(ID_CHECK_BOX_REALTIME_RENDERING).setLocation(10, 10).setText("Realtime rendering").setVisible(true);
+		wickedDisplay.getCheckBox(ID_CHECK_BOX_REALTIME_RENDERING).setOnSelectionChange(checkBox -> {});
 	}
 	
 	private void doConfigureScene() {

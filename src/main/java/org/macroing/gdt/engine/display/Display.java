@@ -29,6 +29,7 @@ import java.util.Objects;
  */
 public abstract class Display {
 	private boolean isRenderingInRealtime;
+	private boolean isSuperSamplingWithDownScaling;
 	private DisplayObserver displayObserver = (pixelIterable, consumer) -> {};
 	private int heightScale = 1;
 	private int widthScale = 1;
@@ -53,6 +54,17 @@ public abstract class Display {
 	 */
 	public final boolean isRenderingInRealtime() {
 		return this.isRenderingInRealtime;
+	}
+	
+	/**
+	 * Returns {@code true} if, and only if, this {@code Display} is rendering super-sampling with down-scaling, {@code false} otherwise.
+	 * <p>
+	 * The effect of this property should only be applied if {@code isRenderingInRealtime()} returns {@code false}.
+	 * 
+	 * @return {@code true} if, and only if, this {@code Display} is rendering super-sampling with down-scaling, {@code false} otherwise
+	 */
+	public final boolean isSuperSamplingWithDownScaling() {
+		return this.isSuperSamplingWithDownScaling;
 	}
 	
 	/**
@@ -228,6 +240,17 @@ public abstract class Display {
 	public final void setResolution(final int width, final int height) {
 		setWidth(width);
 		setHeight(height);
+	}
+	
+	/**
+	 * Sets a new super-sampling with down-scaling property for this {@code Display} instance.
+	 * <p>
+	 * The effect of this property should only be applied if {@code isRenderingInRealtime()} returns {@code false}.
+	 * 
+	 * @param isSuperSamplingWithDownScaling the new super-sampling with down-scaling property
+	 */
+	public final void setSuperSamplingWithDownScaling(final boolean isSuperSamplingWithDownScaling) {
+		this.isSuperSamplingWithDownScaling = isSuperSamplingWithDownScaling;
 	}
 	
 	/**

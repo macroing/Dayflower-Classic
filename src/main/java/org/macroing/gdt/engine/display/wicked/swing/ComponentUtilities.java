@@ -23,6 +23,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.event.ActionListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,6 +34,8 @@ import java.util.function.Supplier;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -42,6 +45,20 @@ import javax.swing.SwingUtilities;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 
 final class ComponentUtilities {
+	public static final Icon J_CHECK_BOX_DISABLED_ICON = new ImageIcon(ComponentUtilities.class.getResource("JCheckBox_DisabledIcon.png"));
+	public static final Icon J_CHECK_BOX_DISABLED_SELECTED_ICON = new ImageIcon(ComponentUtilities.class.getResource("JCheckBox_DisabledSelectedIcon.png"));
+	public static final Icon J_CHECK_BOX_ICON = new ImageIcon(ComponentUtilities.class.getResource("JCheckBox_Icon.png"));
+	public static final Icon J_CHECK_BOX_PRESSED_ICON = new ImageIcon(ComponentUtilities.class.getResource("JCheckBox_PressedIcon.png"));
+	public static final Icon J_CHECK_BOX_ROLLOVER_ICON = new ImageIcon(ComponentUtilities.class.getResource("JCheckBox_RolloverIcon.png"));
+	public static final Icon J_CHECK_BOX_ROLLOVER_SELECTED_ICON = new ImageIcon(ComponentUtilities.class.getResource("JCheckBox_RolloverSelectedIcon.png"));
+	public static final Icon J_CHECK_BOX_SELECTED_ICON = new ImageIcon(ComponentUtilities.class.getResource("JCheckBox_SelectedIcon.png"));
+	public static final Icon J_RADIO_BUTTON_DISABLED_ICON = new ImageIcon(ComponentUtilities.class.getResource("JRadioButton_DisabledIcon.png"));
+	public static final Icon J_RADIO_BUTTON_DISABLED_SELECTED_ICON = new ImageIcon(ComponentUtilities.class.getResource("JRadioButton_DisabledSelectedIcon.png"));
+	public static final Icon J_RADIO_BUTTON_ICON = new ImageIcon(ComponentUtilities.class.getResource("JRadioButton_Icon.png"));
+	public static final Icon J_RADIO_BUTTON_PRESSED_ICON = new ImageIcon(ComponentUtilities.class.getResource("JRadioButton_PressedIcon.png"));
+	public static final Icon J_RADIO_BUTTON_ROLLOVER_ICON = new ImageIcon(ComponentUtilities.class.getResource("JRadioButton_RolloverIcon.png"));
+	public static final Icon J_RADIO_BUTTON_ROLLOVER_SELECTED_ICON = new ImageIcon(ComponentUtilities.class.getResource("JRadioButton_RolloverSelectedIcon.png"));
+	public static final Icon J_RADIO_BUTTON_SELECTED_ICON = new ImageIcon(ComponentUtilities.class.getResource("JRadioButton_SelectedIcon.png"));
 	public static final String KEY_LAYOUT_MANAGER = "LayoutManager";
 	public static final String KEY_MOVABLE = "Movable";
 	public static final String KEY_RESIZABLE = "Resizable";
@@ -93,7 +110,18 @@ final class ComponentUtilities {
 	}
 	
 	public static JCheckBox newJCheckBox() {
-		return doRunInEDT(() -> new JCheckBox(), jCheckBox -> jCheckBox.setBorderPainted(true));
+		return doRunInEDT(() -> new JCheckBox(), jCheckBox -> {
+			jCheckBox.setBorderPainted(false);
+			jCheckBox.setDisabledIcon(Icons.getTranslucentIcon(jCheckBox, J_CHECK_BOX_DISABLED_ICON, 200.0F, 200.0F, 200.0F));
+			jCheckBox.setDisabledSelectedIcon(Icons.getTranslucentIcon(jCheckBox, J_CHECK_BOX_DISABLED_SELECTED_ICON, 200.0F, 200.0F, 200.0F));
+			jCheckBox.setForeground(Color.WHITE);
+			jCheckBox.setIcon(Icons.getTranslucentIcon(jCheckBox, J_CHECK_BOX_ICON, 255.0F, 255.0F, 255.0F));
+			jCheckBox.setOpaque(false);
+			jCheckBox.setPressedIcon(Icons.getTranslucentIcon(jCheckBox, J_CHECK_BOX_PRESSED_ICON, 255.0F, 255.0F, 255.0F));
+			jCheckBox.setRolloverIcon(Icons.getTranslucentIcon(jCheckBox, J_CHECK_BOX_ROLLOVER_ICON, 255.0F, 255.0F, 255.0F));
+			jCheckBox.setRolloverSelectedIcon(Icons.getTranslucentIcon(jCheckBox, J_CHECK_BOX_ROLLOVER_SELECTED_ICON, 255.0F, 255.0F, 255.0F));
+			jCheckBox.setSelectedIcon(Icons.getTranslucentIcon(jCheckBox, J_CHECK_BOX_SELECTED_ICON, 255.0F, 255.0F, 255.0F));
+		});
 	}
 	
 	public static JFrame newJFrame() {
@@ -131,9 +159,25 @@ final class ComponentUtilities {
 		}
 	}
 	
+	public static void addActionListener(final AbstractButton abstractButton, final ActionListener actionListener) {
+		if(abstractButton != null && actionListener != null) {
+			doRunInEDT(() -> abstractButton.addActionListener(actionListener));
+		}
+	}
+	
 	public static void putClientProperty(final JComponent jComponent, final Object key, final Object value) {
 		if(jComponent != null && key != null) {
 			doRunInEDT(() -> jComponent.putClientProperty(key, value));
+		}
+	}
+	
+	public static void removeAllActionListeners(final AbstractButton abstractButton) {
+		if(abstractButton != null) {
+			doRunInEDT(() -> {
+				for(final ActionListener actionListener : abstractButton.getActionListeners()) {
+					abstractButton.removeActionListener(actionListener);
+				}
+			});
 		}
 	}
 	

@@ -98,14 +98,17 @@ public final class PathTracingRenderer extends RayTracingRenderer {
 			final int x = pixel.getX();
 			final int y = pixel.getY();
 			
-			for(int sampleY = 0; sampleY < SAMPLE_FILTER_Y; sampleY++) {
-				for(int sampleX = 0; sampleX < SAMPLE_FILTER_X; sampleX++) {
+//			for(int sampleY = 0; sampleY < SAMPLE_FILTER_Y; sampleY++) {
+//				for(int sampleX = 0; sampleX < SAMPLE_FILTER_X; sampleX++) {
 					for(int sample = 0; sample < SAMPLES; sample++) {
 						final double randomX = 2.0D * pRNG.nextDouble();//[0.0D, 2.0D)
 						final double randomY = 2.0D * pRNG.nextDouble();//[0.0D, 2.0D)
 						
-						final double u = ((sampleX + 0.5D + this.filter.evaluate(randomX, randomX)) * 0.5D + x) * widthReciprocal - 0.5D;
-						final double v = ((sampleY + 0.5D + this.filter.evaluate(randomY, randomY)) * 0.5D + y) * heightReciprocal - 0.5D;
+						final double dx = randomX < 1.0D ? Math.sqrt(randomX) - 1.0D : 1.0D -Math.sqrt(2.0D - randomX);//this.filter.evaluate(randomX, randomX);
+						final double dy = randomY < 1.0D ? Math.sqrt(randomY) - 1.0D : 1.0D -Math.sqrt(2.0D - randomY);//this.filter.evaluate(randomY, randomY);
+						
+						final double u = ((/*sampleX +*/ 0.5D + dx) * 0.5D + x) * widthReciprocal - 0.5D;
+						final double v = ((/*sampleY +*/ 0.5D + dy) * 0.5D + y) * heightReciprocal - 0.5D;
 //						final double u = (0.5D + x) * widthReciprocal - 0.5D;
 //						final double v = (0.5D + y) * heightReciprocal - 0.5D;
 						
@@ -121,8 +124,8 @@ public final class PathTracingRenderer extends RayTracingRenderer {
 						pixel.addSubSamples(1);
 						pixel.getRGBSpectrum().add(spectrum);
 					}
-				}
-			}
+//				}
+//			}
 			
 			rendererObserver.update(pixel);
 		}

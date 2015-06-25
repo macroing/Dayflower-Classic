@@ -21,9 +21,11 @@ package org.macroing.gdt.engine.main;
 final class Constants {
 	public static final int DEFAULT_HEIGHT = 768;
 	public static final int DEFAULT_HEIGHT_SCALE_FOR_QUALITY = 1;
+	public static final int DEFAULT_HEIGHT_SCALE_FOR_QUALITY_AND_SUPER_SAMPLING_WITH_DOWN_SCALING = 2;
 	public static final int DEFAULT_HEIGHT_SCALE_FOR_SPEED = 4;
 	public static final int DEFAULT_WIDTH = 1024;
 	public static final int DEFAULT_WIDTH_SCALE_FOR_QUALITY = 1;
+	public static final int DEFAULT_WIDTH_SCALE_FOR_QUALITY_AND_SUPER_SAMPLING_WITH_DOWN_SCALING = 2;
 	public static final int DEFAULT_WIDTH_SCALE_FOR_SPEED = 4;
 	public static final String ORGANIZATION_NAME = "Macroing.org";
 	public static final String PROJECT_CATEGORY_NAME = "GDT";
@@ -34,6 +36,7 @@ final class Constants {
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	private static boolean isRenderingInRealtime = false;
+	private static boolean isSuperSamplingWithDownScaling = true;
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
@@ -47,6 +50,10 @@ final class Constants {
 		return isRenderingInRealtime;
 	}
 	
+	public static boolean isSuperSamplingWithDownScaling() {
+		return isSuperSamplingWithDownScaling;
+	}
+	
 	public static boolean isSkippingProbabilisticallyTerminatingRay() {
 		return isRenderingInRealtime();
 	}
@@ -56,11 +63,11 @@ final class Constants {
 	}
 	
 	public static int getDefaultHeightScale() {
-		return isRenderingInRealtime() ? DEFAULT_HEIGHT_SCALE_FOR_SPEED : DEFAULT_HEIGHT_SCALE_FOR_QUALITY;
+		return isRenderingInRealtime() ? DEFAULT_HEIGHT_SCALE_FOR_SPEED : isSuperSamplingWithDownScaling() ? DEFAULT_HEIGHT_SCALE_FOR_QUALITY_AND_SUPER_SAMPLING_WITH_DOWN_SCALING : DEFAULT_HEIGHT_SCALE_FOR_QUALITY;
 	}
 	
 	public static int getDefaultHeightScaled() {
-		return isRenderingInRealtime() ? DEFAULT_HEIGHT / DEFAULT_HEIGHT_SCALE_FOR_SPEED : DEFAULT_HEIGHT / DEFAULT_HEIGHT_SCALE_FOR_QUALITY;
+		return isRenderingInRealtime() ? getDefaultHeight() / DEFAULT_HEIGHT_SCALE_FOR_SPEED : isSuperSamplingWithDownScaling() ? getDefaultHeight() * DEFAULT_HEIGHT_SCALE_FOR_QUALITY : getDefaultHeight() / DEFAULT_HEIGHT_SCALE_FOR_QUALITY;
 	}
 	
 	public static int getDefaultWidth() {
@@ -68,11 +75,11 @@ final class Constants {
 	}
 	
 	public static int getDefaultWidthScale() {
-		return isRenderingInRealtime() ? DEFAULT_WIDTH_SCALE_FOR_SPEED : DEFAULT_WIDTH_SCALE_FOR_QUALITY;
+		return isRenderingInRealtime() ? DEFAULT_WIDTH_SCALE_FOR_SPEED : isSuperSamplingWithDownScaling() ? DEFAULT_WIDTH_SCALE_FOR_QUALITY_AND_SUPER_SAMPLING_WITH_DOWN_SCALING : DEFAULT_WIDTH_SCALE_FOR_QUALITY;
 	}
 	
 	public static int getDefaultWidthScaled() {
-		return isRenderingInRealtime() ? DEFAULT_WIDTH / DEFAULT_WIDTH_SCALE_FOR_SPEED : DEFAULT_WIDTH / DEFAULT_WIDTH_SCALE_FOR_QUALITY;
+		return isRenderingInRealtime() ? getDefaultWidth() / DEFAULT_WIDTH_SCALE_FOR_SPEED : isSuperSamplingWithDownScaling() ? getDefaultWidth() * DEFAULT_WIDTH_SCALE_FOR_QUALITY : getDefaultWidth() / DEFAULT_WIDTH_SCALE_FOR_QUALITY;
 	}
 	
 	public static int getDepthUntilProbabilisticallyTerminatingRay() {
@@ -85,5 +92,9 @@ final class Constants {
 	
 	public static void setRenderingInRealtime(final boolean isRenderingInRealtime) {
 		Constants.isRenderingInRealtime = isRenderingInRealtime;
+	}
+	
+	public static void setSuperSamplingWithDownScaling(final boolean isSuperSamplingWithDownScaling) {
+		Constants.isSuperSamplingWithDownScaling = isSuperSamplingWithDownScaling;
 	}
 }
