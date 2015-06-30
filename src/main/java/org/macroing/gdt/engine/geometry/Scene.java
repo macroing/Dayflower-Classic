@@ -23,17 +23,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import org.macroing.gdt.engine.configuration.Configuration;
+import org.macroing.gdt.engine.configuration.ConfigurationObserver;
 import org.macroing.gdt.engine.util.PRNG;
 
-public final class Scene {
+public final class Scene implements ConfigurationObserver {
 	private boolean isSkippingProbabilisticallyTerminatingRay;
-	private int depthUntilProbabilisticallyTerminatingRay = 5;
+	private Configuration configuration;
+	private int depthUntilProbabilisticallyTerminatingRay;
 	private final List<Shape> shapes = new ArrayList<>();
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	private Scene() {
-		
+		setConfiguration(Configuration.getDefaultInstance());
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -48,8 +51,8 @@ public final class Scene {
 		return isIntersecting;
 	}
 	
-	public int getDepthUntilProbabilisticallyTerminatingRay() {
-		return this.depthUntilProbabilisticallyTerminatingRay;
+	public Configuration getConfiguration() {
+		return this.configuration;
 	}
 	
 	public Spectrum radiance(final int pass, final Intersection intersection, final PRNG pRNG) {
@@ -145,16 +148,23 @@ public final class Scene {
 		this.shapes.add(Objects.requireNonNull(shape, "shape == null"));
 	}
 	
+	@Override
+	public void onUpdate(final Configuration configuration) {
+		this.isSkippingProbabilisticallyTerminatingRay = configuration.isSkippingProbabilisticallyTerminatingRay();
+		this.depthUntilProbabilisticallyTerminatingRay = configuration.getDepthUntilProbabilisticallyTerminatingRay();
+	}
+	
 	public void removeShape(final Shape shape) {
 		this.shapes.remove(Objects.requireNonNull(shape, "shape == null"));
 	}
 	
-	public void setDepthUntilProbabilisticallyTerminatingRay(final int depthUntilProbabilisticallyTerminatingRay) {
-		this.depthUntilProbabilisticallyTerminatingRay = depthUntilProbabilisticallyTerminatingRay;
-	}
-	
-	public void setSkippingProbabilisticallyTerminatingRay(final boolean isSkippingProbabilisticallyTerminatingRay) {
-		this.isSkippingProbabilisticallyTerminatingRay = isSkippingProbabilisticallyTerminatingRay;
+	public void setConfiguration(final Configuration configuration) {
+		if(this.configuration != null) {
+			this.configuration.removeConfigurationObserver(this);
+		}
+		
+		this.configuration = Objects.requireNonNull(configuration, "configuration == null");
+		this.configuration.addConfigurationObserver(this);
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////

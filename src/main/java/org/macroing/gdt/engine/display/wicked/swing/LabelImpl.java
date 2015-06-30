@@ -18,19 +18,19 @@
  */
 package org.macroing.gdt.engine.display.wicked.swing;
 
-import javax.swing.JButton;
+import javax.swing.JLabel;
 
-import org.macroing.gdt.engine.display.wicked.Button;
 import org.macroing.gdt.engine.display.wicked.Color;
 import org.macroing.gdt.engine.display.wicked.Font;
+import org.macroing.gdt.engine.display.wicked.Label;
 import org.macroing.gdt.engine.display.wicked.WickedDisplay;
 
-final class ButtonImpl extends Button<ButtonImpl> {
-	private final JButton jButton = ComponentUtilities.newJButton();
+final class LabelImpl extends Label<LabelImpl> {
+	private final JLabel jLabel = ComponentUtilities.newJLabel();
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	public ButtonImpl(final String id, final WickedDisplay wickedDisplay) {
+	public LabelImpl(final String id, final WickedDisplay wickedDisplay) {
 		super(id, wickedDisplay);
 	}
 	
@@ -38,21 +38,21 @@ final class ButtonImpl extends Button<ButtonImpl> {
 	
 	@Override
 	public boolean isMovable() {
-		return Boolean.class.cast(ComponentUtilities.getClientProperty(this.jButton, ComponentUtilities.KEY_MOVABLE, Boolean.FALSE)).booleanValue();
+		return Boolean.class.cast(ComponentUtilities.getClientProperty(this.jLabel, ComponentUtilities.KEY_MOVABLE, Boolean.FALSE)).booleanValue();
 	}
 	
 	@Override
 	public boolean isResizable() {
-		return Boolean.class.cast(ComponentUtilities.getClientProperty(this.jButton, ComponentUtilities.KEY_RESIZABLE, Boolean.FALSE)).booleanValue();
+		return Boolean.class.cast(ComponentUtilities.getClientProperty(this.jLabel, ComponentUtilities.KEY_RESIZABLE, Boolean.FALSE)).booleanValue();
 	}
 	
 	@Override
 	public boolean isVisible() {
-		return ComponentUtilities.isVisible(this.jButton);
+		return ComponentUtilities.isVisible(this.jLabel);
 	}
 	
 	@Override
-	public ButtonImpl setFont(final Font font, final long key) {
+	public LabelImpl setFont(final Font font, final long key) {
 		if(authenticate(key)) {
 //			TODO: Add support for fonts.
 		}
@@ -61,7 +61,7 @@ final class ButtonImpl extends Button<ButtonImpl> {
 	}
 	
 	@Override
-	public ButtonImpl setForeground(final Color foreground, final long key) {
+	public LabelImpl setForeground(final Color foreground, final long key) {
 		if(authenticate(key)) {
 //			TODO: Add support for foreground colors.
 		}
@@ -70,54 +70,54 @@ final class ButtonImpl extends Button<ButtonImpl> {
 	}
 	
 	@Override
-	public ButtonImpl setLocation(final int x, final int y, final long key) {
+	public LabelImpl setLocation(final int x, final int y, final long key) {
 		if(authenticate(key)) {
-			ComponentUtilities.setLocation(this.jButton, x, y);
+			ComponentUtilities.setLocation(this.jLabel, x, y);
 		}
 		
 		return this;
 	}
 	
 	@Override
-	public ButtonImpl setMovable(final boolean isMovable, final long key) {
+	public LabelImpl setMovable(final boolean isMovable, final long key) {
 		if(authenticate(key)) {
-			ComponentUtilities.putClientProperty(this.jButton, ComponentUtilities.KEY_MOVABLE, Boolean.valueOf(isMovable));
+			ComponentUtilities.putClientProperty(this.jLabel, ComponentUtilities.KEY_MOVABLE, Boolean.valueOf(isMovable));
 		}
 		
 		return this;
 	}
 	
 	@Override
-	public ButtonImpl setResizable(final boolean isResizable, final long key) {
+	public LabelImpl setResizable(final boolean isResizable, final long key) {
 		if(authenticate(key)) {
-			ComponentUtilities.putClientProperty(this.jButton, ComponentUtilities.KEY_RESIZABLE, Boolean.valueOf(isResizable));
+			ComponentUtilities.putClientProperty(this.jLabel, ComponentUtilities.KEY_RESIZABLE, Boolean.valueOf(isResizable));
 		}
 		
 		return this;
 	}
 	
 	@Override
-	public ButtonImpl setSize(final int width, final int height, final long key) {
+	public LabelImpl setSize(final int width, final int height, final long key) {
 		if(authenticate(key)) {
-			ComponentUtilities.setSize(this.jButton, width, height);
+			ComponentUtilities.setSize(this.jLabel, width, height);
 		}
 		
 		return this;
 	}
 	
 	@Override
-	public ButtonImpl setText(final String text, final long key) {
+	public LabelImpl setText(final String text, final long key) {
 		if(authenticate(key)) {
-			ComponentUtilities.setText(this.jButton, text);
+			ComponentUtilities.setText(this.jLabel, text);
 		}
 		
 		return this;
 	}
 	
 	@Override
-	public ButtonImpl setVisible(final boolean isVisible, final long key) {
+	public LabelImpl setVisible(final boolean isVisible, final long key) {
 		if(authenticate(key)) {
-			ComponentUtilities.setVisible(this.jButton, isVisible);
+			ComponentUtilities.setVisible(this.jLabel, isVisible);
 		}
 		
 		return this;
@@ -135,31 +135,31 @@ final class ButtonImpl extends Button<ButtonImpl> {
 	
 	@Override
 	public int getHeight() {
-		return ComponentUtilities.getHeight(this.jButton);
+		return ComponentUtilities.getHeight(this.jLabel);
 	}
 	
 	@Override
 	public int getWidth() {
-		return ComponentUtilities.getWidth(this.jButton);
+		return ComponentUtilities.getWidth(this.jLabel);
 	}
 	
 	@Override
 	public int getX() {
-		return ComponentUtilities.getX(this.jButton);
+		return ComponentUtilities.getX(this.jLabel);
 	}
 	
 	@Override
 	public int getY() {
-		return ComponentUtilities.getY(this.jButton);
+		return ComponentUtilities.getY(this.jLabel);
 	}
 	
 	@Override
 	public Object getComponentObject() {
-		return this.jButton;
+		return this.jLabel;
 	}
 	
 	@Override
 	public String getText() {
-		return ComponentUtilities.getText(this.jButton);
+		return ComponentUtilities.getText(this.jLabel);
 	}
 }

@@ -19,6 +19,7 @@
 package org.macroing.gdt.engine.renderer;
 
 import java.util.Objects;
+import java.util.function.BooleanSupplier;
 
 import org.macroing.gdt.engine.display.Pixel;
 import org.macroing.gdt.engine.display.PixelIterable;
@@ -67,7 +68,7 @@ public abstract class Renderer {
 	 * <p>
 	 * This is mainly where the Rasterizer- and Ray Tracer-pipelines differ. Therefore, different subclasses of this {@code Renderer} class should be used, depending on the rendering algorithm.
 	 * <p>
-	 * If either {@code pixelIterable} or {@code rendererObserver} are {@code null}, a {@code NullPointerException} may be thrown. But no guarantees can be made.
+	 * If either {@code pixelIterable}, {@code rendererObserver} or {@code booleanSupplier} are {@code null}, a {@code NullPointerException} may be thrown. But no guarantees can be made.
 	 * <p>
 	 * A {@link PixelIterable} is a data structure that can be iterated. It iterates over {@link Pixel} instances, each one referring to an individual pixel on the screen. They contain methods to manipulate their data.
 	 * <p>
@@ -77,9 +78,10 @@ public abstract class Renderer {
 	 * 
 	 * @param pixelIterable a {@link PixelIterable} can iterate over {@link Pixel} instances, each one referring to an individual pixel on the screen
 	 * @param rendererObserver an entity observing per-pixel updates by a concrete {@code Renderer} implementation
-	 * @throws NullPointerException thrown if, and only if, either {@code pixelIterable} or {@code rendererObserver} are {@code null}
+	 * @param booleanSupplier a {@code BooleanSupplier} that tells us if we should cancel rendering
+	 * @throws NullPointerException thrown if, and only if, either {@code pixelIterable}, {@code rendererObserver} or {@code booleanSupplier} are {@code null}
 	 */
-	public abstract void render(final PixelIterable pixelIterable, final RendererObserver rendererObserver);
+	public abstract void render(final PixelIterable pixelIterable, final RendererObserver rendererObserver, final BooleanSupplier booleanSupplier);
 	
 	/**
 	 * Sets the {@link PRNG} instance to use.

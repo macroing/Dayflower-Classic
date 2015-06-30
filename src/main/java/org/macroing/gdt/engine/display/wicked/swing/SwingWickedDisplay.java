@@ -22,7 +22,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferInt;
 import java.awt.image.WritableRaster;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -32,10 +31,11 @@ import java.util.Objects;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
+import org.macroing.gdt.engine.configuration.Configuration;
 import org.macroing.gdt.engine.display.Display;
 import org.macroing.gdt.engine.display.DisplayObserver;
 import org.macroing.gdt.engine.display.Pixel;
@@ -44,6 +44,7 @@ import org.macroing.gdt.engine.display.wicked.Button;
 import org.macroing.gdt.engine.display.wicked.CheckBox;
 import org.macroing.gdt.engine.display.wicked.Component;
 import org.macroing.gdt.engine.display.wicked.Container;
+import org.macroing.gdt.engine.display.wicked.Label;
 import org.macroing.gdt.engine.display.wicked.Panel;
 import org.macroing.gdt.engine.display.wicked.Pin;
 import org.macroing.gdt.engine.display.wicked.Window;
@@ -62,6 +63,7 @@ public final class SwingWickedDisplay extends WickedDisplay {
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
+	private final BufferedImageJPanel bufferedImageJPanel = BufferedImageJPanel.newInstance();
 	private final List<PixelIterable> pixelIterables = new ArrayList<>();
 	private final Map<String, Component<?>> components = new LinkedHashMap<>();
 	private final MousePointer mousePointer = MousePointerImpl.newInstance();
@@ -160,50 +162,22 @@ public final class SwingWickedDisplay extends WickedDisplay {
 	}
 	
 	/**
-	 * Returns the height currently set for this {@code SwingWickedDisplay} instance.
+	 * Returns a {@link Label} instance given an ID.
+	 * <p>
+	 * If {@code id} is {@code null}, a {@code NullPointerException} will be thrown.
+	 * <p>
+	 * If a {@link Component} with that ID already exists, and it's not a {@code Label}, an {@code IllegalArgumentException} will be thrown.
+	 * <p>
+	 * If no {@code Component} has been assigned that ID, an {@code IllegalArgumentException} will be thrown.
 	 * 
-	 * @return the height currently set for this {@code SwingWickedDisplay} instance
+	 * @param id the ID of the {@code Label} to return
+	 * @return a {@code Label} instance given an ID
+	 * @throws IllegalArgumentException thrown if, and only if, either no {@code Component} has been assigned the given ID, or a {@code Component} has been assigned the given ID, but it's not a {@code Label}
+	 * @throws NullPointerException thrown if, and only if, {@code id} is {@code null}
 	 */
 	@Override
-	public int getHeight() {
-		final Window<?> window = getWindow();
-		
-		final JFrame jFrame = JFrame.class.cast(window.getComponentObject());
-		
-		if(SwingUtilities.isEventDispatchThread()) {
-			return jFrame.getHeight();
-		}
-		final int[] height = new int[1];
-		
-		doInvokeAndWait(() -> {
-			height[0] = jFrame.getHeight();
-		});
-		
-		return height[0];
-	}
-	
-	/**
-	 * Returns the width currently set for this {@code SwingWickedDisplay} instance.
-	 * 
-	 * @return the width currently set for this {@code SwingWickedDisplay} instance
-	 */
-	@Override
-	public int getWidth() {
-		final Window<?> window = getWindow();
-		
-		final JFrame jFrame = JFrame.class.cast(window.getComponentObject());
-		
-		if(SwingUtilities.isEventDispatchThread()) {
-			return jFrame.getWidth();
-		}
-		
-		final int[] width = new int[1];
-		
-		doInvokeAndWait(() -> {
-			width[0] = jFrame.getWidth();
-		});
-		
-		return width[0];
+	public Label<?> getLabel(final String id) {
+		return doRequireValidComponent(id, Label.class);
 	}
 	
 	/**
@@ -297,6 +271,28 @@ public final class SwingWickedDisplay extends WickedDisplay {
 	
 	//TODO: Comment...
 	@Override
+	public SwingWickedDisplay addLabel(final String id, final String parentId) {
+		if(id != null && parentId != null && !this.components.containsKey(id) && this.components.containsKey(parentId)) {
+			final Component<?> component = this.components.get(parentId);
+			
+			if(component instanceof Container) {
+				final Label<?> label = new LabelImpl(id, this);
+				
+				JLabel.class.cast(label.getComponentObject()).addComponentListener(new ComponentListenerImpl(label));
+				
+				this.components.put(id, label);
+				
+				final
+				Container<?> container = Container.class.cast(component);
+				container.addComponent(label);
+			}
+		}
+		
+		return this;
+	}
+	
+	//TODO: Comment...
+	@Override
 	public SwingWickedDisplay addPanel(final String id, final String parentId) {
 		if(id != null && parentId != null && !this.components.containsKey(id) && this.components.containsKey(parentId)) {
 			final Component<?> component = this.components.get(parentId);
@@ -373,27 +369,37 @@ public final class SwingWickedDisplay extends WickedDisplay {
 	 */
 	@Override
 	public void configure() {
-		final int width = isSuperSamplingWithDownScaling() && !isRenderingInRealtime() ? getWidth() * getWidthScale() : getWidth() / getWidthScale();
-		final int height = isSuperSamplingWithDownScaling() && !isRenderingInRealtime() ? getHeight() * getHeightScale() : getHeight() / getHeightScale();
+		final Configuration configuration = getConfiguration();
 		
-		final BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		final int width = configuration.getWidth();
+		final int height = configuration.getHeight();
+		final int widthScaled = configuration.getWidthScaled();
+		final int heightScaled = configuration.getHeightScaled();
+		
+		final BufferedImage bufferedImage = new BufferedImage(widthScaled, heightScaled, BufferedImage.TYPE_INT_RGB);
 		
 		final int[] rGB = toRGB(bufferedImage);
 		
 		this.pixelIterables.clear();
-		this.pixelIterables.addAll(PixelIterable.createPixelIterablesFor(width, height, rGB, SWING_WORKER_COUNT));
+		this.pixelIterables.addAll(PixelIterable.createPixelIterablesFor(widthScaled, heightScaled, rGB, SWING_WORKER_COUNT));
 		
-		doInvokeAndWait(() -> {
-			final Window<?> window = getWindow();
-			
+		this.bufferedImageJPanel.setBufferedImage(bufferedImage);
+		this.bufferedImageJPanel.setConfiguration(configuration);
+		
+		ComponentUtilities.runInEDT(() -> {
 			final
-			JFrame jFrame = JFrame.class.cast(window.getComponentObject());
-			jFrame.getContentPane().removeAll();
-			jFrame.getContentPane().add(BufferedImageJPanel.newInstance(bufferedImage, isRenderingInRealtime(), getWidth(), getHeight()));
+			JFrame jFrame = JFrame.class.cast(getWindow().getComponentObject());
 			jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			jFrame.setFocusTraversalKeysEnabled(false);
 			jFrame.setIgnoreRepaint(true);
-			jFrame.setLocationRelativeTo(null);
+			jFrame.setSize(width, height);
+			jFrame.setTitle(configuration.getTitle());
+			jFrame.revalidate();
+			
+			if(jFrame.isVisible()) {
+				doCancelSwingWorkers();
+				doConfigureAndExecuteSwingWorkers();
+			}
 		});
 	}
 	
@@ -409,14 +415,13 @@ public final class SwingWickedDisplay extends WickedDisplay {
 	 */
 	@Override
 	public void hide() {
-		doInvokeAndWait(() -> {
-			final Window<?> window = getWindow();
-			
-			final JFrame jFrame = JFrame.class.cast(window.getComponentObject());
+		ComponentUtilities.runInEDT(() -> {
+			final JFrame jFrame = JFrame.class.cast(getWindow().getComponentObject());
 			
 			if(jFrame.isVisible()) {
 				doCancelSwingWorkers();
 				
+				jFrame.getContentPane().remove(this.bufferedImageJPanel);
 				jFrame.setVisible(false);
 				jFrame.dispose();
 			}
@@ -428,61 +433,9 @@ public final class SwingWickedDisplay extends WickedDisplay {
 	 */
 	@Override
 	public void render() {
-		final Window<?> window = getWindow();
-		
 		final
-		JFrame jFrame = JFrame.class.cast(window.getComponentObject());
+		JFrame jFrame = JFrame.class.cast(getWindow().getComponentObject());
 		jFrame.repaint();
-	}
-	
-	/**
-	 * Sets a new height for this {@code SwingWickedDisplay} instance.
-	 * 
-	 * @param height the new height
-	 */
-	@Override
-	public void setHeight(final int height) {
-		doInvokeAndWait(() -> {
-			final Window<?> window = getWindow();
-			
-			final
-			JFrame jFrame = JFrame.class.cast(window.getComponentObject());
-			jFrame.setSize(jFrame.getWidth(), height);
-		});
-	}
-	
-	/**
-	 * Sets the title for this {@code SwingWickedDisplay} instance.
-	 * <p>
-	 * If {@code title} is {@code null}, the empty {@code String} {@code ""} will be set.
-	 * 
-	 * @param title the title for this {@code Display} instance
-	 */
-	@Override
-	public void setTitle(final String title) {
-		doInvokeAndWait(() -> {
-			final Window<?> window = getWindow();
-			
-			final
-			JFrame jFrame = JFrame.class.cast(window.getComponentObject());
-			jFrame.setTitle(title);
-		});
-	}
-	
-	/**
-	 * Sets a new width for this {@code SwingWickedDisplay} instance.
-	 * 
-	 * @param width the new width
-	 */
-	@Override
-	public void setWidth(final int width) {
-		doInvokeAndWait(() -> {
-			final Window<?> window = getWindow();
-			
-			final
-			JFrame jFrame = JFrame.class.cast(window.getComponentObject());
-			jFrame.setSize(width, jFrame.getHeight());
-		});
 	}
 	
 	/**
@@ -497,14 +450,15 @@ public final class SwingWickedDisplay extends WickedDisplay {
 	 */
 	@Override
 	public void show() {
-		doInvokeAndWait(() -> {
-			final Window<?> window = getWindow();
-			
-			final JFrame jFrame = JFrame.class.cast(window.getComponentObject());
+		ComponentUtilities.runInEDT(() -> {
+			final JFrame jFrame = JFrame.class.cast(getWindow().getComponentObject());
 			
 			if(!jFrame.isVisible()) {
 				Mouse.getInstance().setMousePointer(this.mousePointer);
 				
+				this.bufferedImageJPanel.configure();
+				
+				jFrame.getContentPane().add(this.bufferedImageJPanel);
 				jFrame.setVisible(true);
 				jFrame.createBufferStrategy(2);
 				
@@ -561,7 +515,7 @@ public final class SwingWickedDisplay extends WickedDisplay {
 		synchronized(this.swingWorkers) {
 			for(int i = 0; i < this.swingWorkers.length; i++) {
 				if(this.swingWorkers[i] != null) {
-					this.swingWorkers[i].cancel(false);
+					this.swingWorkers[i].cancel(true);
 					this.swingWorkers[i] = null;
 				}
 			}
@@ -604,14 +558,6 @@ public final class SwingWickedDisplay extends WickedDisplay {
 		return rGB;
 	}
 	
-	private static void doInvokeAndWait(final Runnable runnable) {
-		try {
-			SwingUtilities.invokeAndWait(runnable);
-		} catch(final InterruptedException | InvocationTargetException e) {
-			
-		}
-	}
-	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	private static final class SwingWorkerImpl extends SwingWorker<Void, Void> {
@@ -640,8 +586,7 @@ public final class SwingWickedDisplay extends WickedDisplay {
 					pixel.update();
 					
 					this.jFrame.repaint();
-//					this.jFrame.repaint(pixel.getX(), pixel.getY(), 1, 1);
-				});
+				}, () -> isCancelled());
 			}
 			
 			return null;

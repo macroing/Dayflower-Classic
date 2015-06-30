@@ -21,12 +21,15 @@ package org.macroing.gdt.engine.camera;
 import java.lang.reflect.Field;//TODO: Fix this class and remove this comment once done. Add Javadocs etc.
 import java.util.Objects;
 
+import org.macroing.gdt.engine.configuration.Configuration;
+import org.macroing.gdt.engine.configuration.ConfigurationObserver;
 import org.macroing.gdt.engine.geometry.Point;
 import org.macroing.gdt.engine.geometry.Ray;
 import org.macroing.gdt.engine.geometry.Vector;
 
 //TODO: This SimpleCamera class will be replaced with the Camera class and its subclasses in the future.
-public final class SimpleCamera {
+public final class SimpleCamera implements ConfigurationObserver {
+	private Configuration configuration = Configuration.getDefaultInstance();
 	private Point eye = Point.zero();
 //	private Point lookAt = Point.zero();//New
 	private Vector lookAt = Vector.z().negate();//Old
@@ -43,6 +46,10 @@ public final class SimpleCamera {
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	public Configuration getConfiguration() {
+		return this.configuration;
+	}
 	
 	public Point getEye() {
 		return this.eye.copy();
@@ -79,6 +86,10 @@ public final class SimpleCamera {
 		return this.up;
 	}
 	
+	public void calculateOrthonormalBasis() {
+		calculateOrthonormalBasisFor(this.configuration.getWidthScaled(), this.configuration.getHeightScaled());
+	}
+	
 	public void calculateOrthonormalBasisFor(final double width, final double height) {
 //		Old:
 		
@@ -100,6 +111,20 @@ public final class SimpleCamera {
 //		System.out.println("U: " + this.u);
 //		System.out.println("V: " + this.v);
 //		System.out.println("W: " + this.w);
+	}
+	
+	@Override
+	public void onUpdate(final Configuration configuration) {
+		calculateOrthonormalBasis();
+	}
+	
+	public void setConfiguration(final Configuration configuration) {
+		if(this.configuration != null) {
+			this.configuration.removeConfigurationObserver(this);
+		}
+		
+		this.configuration = Objects.requireNonNull(configuration, "configuration == null");
+		this.configuration.addConfigurationObserver(this);
 	}
 	
 	public void setEye(final Point eye) {

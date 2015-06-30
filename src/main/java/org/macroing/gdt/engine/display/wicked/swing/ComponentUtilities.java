@@ -40,6 +40,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.plaf.metal.MetalLookAndFeel;
@@ -78,42 +79,49 @@ final class ComponentUtilities {
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	public static boolean isResizable(final Frame frame) {
-		return frame != null && doRunInEDT(() -> Boolean.valueOf(frame.isResizable())).booleanValue();
+		return frame != null && runInEDT(() -> Boolean.valueOf(frame.isResizable())).booleanValue();
 	}
 	
 	public static boolean isSelected(final AbstractButton abstractButton) {
-		return abstractButton != null && doRunInEDT(() -> Boolean.valueOf(abstractButton.isSelected())).booleanValue();
+		return abstractButton != null && runInEDT(() -> Boolean.valueOf(abstractButton.isSelected())).booleanValue();
 	}
 	
 	public static boolean isVisible(final Component component) {
-		return component != null && doRunInEDT(() -> Boolean.valueOf(component.isVisible())).booleanValue();
+		return component != null && runInEDT(() -> Boolean.valueOf(component.isVisible())).booleanValue();
+	}
+	
+	public static Component[] getComponents(final Container container) {
+		synchronized(container.getTreeLock()) {
+			return container.getComponents();
+		}
 	}
 	
 	public static int getHeight(final Component component) {
-		return component != null ? doRunInEDT(() -> Integer.valueOf(component.getHeight())).intValue() : 0;
+		return component != null ? runInEDT(() -> Integer.valueOf(component.getHeight())).intValue() : 0;
 	}
 	
 	public static int getWidth(final Component component) {
-		return component != null ? doRunInEDT(() -> Integer.valueOf(component.getWidth())).intValue() : 0;
+		return component != null ? runInEDT(() -> Integer.valueOf(component.getWidth())).intValue() : 0;
 	}
 	
 	public static int getX(final Component component) {
-		return component != null ? doRunInEDT(() -> Integer.valueOf(component.getX())).intValue() : 0;
+		return component != null ? runInEDT(() -> Integer.valueOf(component.getX())).intValue() : 0;
 	}
 	
 	public static int getY(final Component component) {
-		return component != null ? doRunInEDT(() -> Integer.valueOf(component.getY())).intValue() : 0;
+		return component != null ? runInEDT(() -> Integer.valueOf(component.getY())).intValue() : 0;
 	}
 	
 	public static JButton newJButton() {
-		return doRunInEDT(() -> new JButton());
+		return runInEDT(() -> new JButton());
 	}
 	
 	public static JCheckBox newJCheckBox() {
-		return doRunInEDT(() -> new JCheckBox(), jCheckBox -> {
+		return runInEDT(() -> new JCheckBox(), jCheckBox -> {
 			jCheckBox.setBorderPainted(false);
 			jCheckBox.setDisabledIcon(Icons.getTranslucentIcon(jCheckBox, J_CHECK_BOX_DISABLED_ICON, 200.0F, 200.0F, 200.0F));
 			jCheckBox.setDisabledSelectedIcon(Icons.getTranslucentIcon(jCheckBox, J_CHECK_BOX_DISABLED_SELECTED_ICON, 200.0F, 200.0F, 200.0F));
+			jCheckBox.setFocusPainted(false);
 			jCheckBox.setForeground(Color.WHITE);
 			jCheckBox.setIcon(Icons.getTranslucentIcon(jCheckBox, J_CHECK_BOX_ICON, 255.0F, 255.0F, 255.0F));
 			jCheckBox.setOpaque(false);
@@ -125,7 +133,7 @@ final class ComponentUtilities {
 	}
 	
 	public static JFrame newJFrame() {
-		return doRunInEDT(() -> new JFrame(), jFrame -> {
+		return runInEDT(() -> new JFrame(), jFrame -> {
 			jFrame.addKeyListener(KeyListenerImpl.newInstance(jFrame));
 			jFrame.addMouseListener(MouseListenerImpl.newInstance(jFrame));
 			jFrame.addMouseMotionListener(MouseMotionListenerImpl.newInstance(jFrame));
@@ -134,144 +142,63 @@ final class ComponentUtilities {
 		});
 	}
 	
+	public static JLabel newJLabel() {
+		return runInEDT(() -> new JLabel(), jLabel -> {
+			jLabel.setForeground(Color.WHITE);
+		});
+	}
+	
 	public static JPanel newJPanel() {
-		return doRunInEDT(() -> new JPanel(), jPanel -> {
+		return runInEDT(() -> new JPanel(), jPanel -> {
 			jPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
 			jPanel.setLayout(new LayoutManagerImpl());
 		});
 	}
 	
-	public static Object getClientProperty(final JComponent jComponent, final Object key, final Object value) {
-		return jComponent != null && key != null ? doRunInEDT(() -> jComponent.getClientProperty(key), null, value) : value;
+	public static List<Component> getAllComponentsFrom(final Component component) {
+		return getAllComponentsFrom(component, new ArrayList<>());
 	}
 	
-	public static String getText(final AbstractButton abstractButton) {
-		return abstractButton != null ? doRunInEDT(() -> abstractButton.getText(), null, "") : "";
-	}
-	
-	public static String getTitle(final Frame frame) {
-		return frame != null ? doRunInEDT(() -> frame.getTitle(), null, "") : "";
-	}
-	
-	public static void add(final Component component, final Container container) {
-		if(component != null && container != null) {
-			doRunInEDT(() -> container.add(component));
-		}
-	}
-	
-	public static void addActionListener(final AbstractButton abstractButton, final ActionListener actionListener) {
-		if(abstractButton != null && actionListener != null) {
-			doRunInEDT(() -> abstractButton.addActionListener(actionListener));
-		}
-	}
-	
-	public static void putClientProperty(final JComponent jComponent, final Object key, final Object value) {
-		if(jComponent != null && key != null) {
-			doRunInEDT(() -> jComponent.putClientProperty(key, value));
-		}
-	}
-	
-	public static void removeAllActionListeners(final AbstractButton abstractButton) {
-		if(abstractButton != null) {
-			doRunInEDT(() -> {
-				for(final ActionListener actionListener : abstractButton.getActionListeners()) {
-					abstractButton.removeActionListener(actionListener);
-				}
-			});
-		}
-	}
-	
-	public static void setIgnoreRepaint(final Component component, final boolean ignoreRepaint) {
-		if(component != null) {
-			doRunInEDT(() -> {
-				doGetAllComponentsFrom(component).forEach(component0 -> component0.setIgnoreRepaint(ignoreRepaint));
-			});
-		}
-	}
-	
-	public static void setLocation(final Component component, final int x, final int y) {
-		if(component != null && x >= 0 && y >= 0) {
-			doRunInEDT(() -> component.setLocation(x, y));
-		}
-	}
-	
-	public static void setResizable(final Frame frame, final boolean isResizable) {
-		if(frame != null) {
-			doRunInEDT(() -> frame.setResizable(isResizable));
-		}
-	}
-	
-	public static void setSelected(final AbstractButton abstractButton, final boolean isSelected) {
-		if(abstractButton != null) {
-			doRunInEDT(() -> abstractButton.setSelected(isSelected));
-		}
-	}
-	
-	public static void setSize(final Component component, final int width, final int height) {
-		if(component != null && width >= 0 && height >= 0) {
-			doRunInEDT(() -> {
-				component.setMaximumSize(new Dimension(width, height));
-				component.setMinimumSize(new Dimension(width, height));
-				component.setPreferredSize(new Dimension(width, height));
-				component.setSize(new Dimension(width, height));
-			});
-		}
-	}
-	
-	public static void setText(final AbstractButton abstractButton, final String text) {
-		if(abstractButton != null && text != null) {
-			doRunInEDT(() -> abstractButton.setText(text));
-		}
-	}
-	
-	public static void setTitle(final Frame frame, final String title) {
-		if(frame != null) {
-			doRunInEDT(() -> frame.setTitle(title));
-		}
-	}
-	
-	public static void setVisible(final Component component, final boolean isVisible) {
-		if(component != null) {
-			doRunInEDT(() -> component.setVisible(isVisible));
-		}
-	}
-	
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-	
-	private static Component[] doGetComponents(final Container container) {
-		synchronized(container.getTreeLock()) {
-			return container.getComponents();
-		}
-	}
-	
-	private static List<Component> doGetAllComponentsFrom(final Component component) {
-		return doGetAllComponentsFrom(component, new ArrayList<>());
-	}
-	
-	private static List<Component> doGetAllComponentsFrom(final Component component, List<Component> components) {
+	public static List<Component> getAllComponentsFrom(final Component component, List<Component> components) {
 		if(component instanceof Container) {
-			Arrays.stream(doGetComponents(Container.class.cast(component))).forEach(component0 -> doGetAllComponentsFrom(component0, components));
+			Arrays.stream(getComponents(Container.class.cast(component))).forEach(component0 -> getAllComponentsFrom(component0, components));
 		}
 		
 		return components;
 	}
 	
-	private static <T> T doRunInEDT(final Supplier<T> supplier) {
-		return doRunInEDT(supplier, object -> {});
+	public static Object getClientProperty(final JComponent jComponent, final Object key, final Object value) {
+		return jComponent != null && key != null ? runInEDT(() -> jComponent.getClientProperty(key), null, value) : value;
 	}
 	
-	private static <T> T doRunInEDT(final Supplier<T> supplier, final Consumer<T> consumer) {
-		return doRunInEDT(supplier, consumer, null);
+	public static String getText(final AbstractButton abstractButton) {
+		return abstractButton != null ? runInEDT(() -> abstractButton.getText(), null, "") : "";
 	}
 	
-	private static <T> T doRunInEDT(final Supplier<T> supplier, final Consumer<T> consumer, final T defaultObject) {
+	public static String getText(final JLabel jLabel) {
+		return jLabel != null ? runInEDT(() -> jLabel.getText(), null, "") : "";
+	}
+	
+	public static String getTitle(final Frame frame) {
+		return frame != null ? runInEDT(() -> frame.getTitle(), null, "") : "";
+	}
+	
+	public static <T> T runInEDT(final Supplier<T> supplier) {
+		return runInEDT(supplier, object -> {});
+	}
+	
+	public static <T> T runInEDT(final Supplier<T> supplier, final Consumer<T> consumer) {
+		return runInEDT(supplier, consumer, null);
+	}
+	
+	public static <T> T runInEDT(final Supplier<T> supplier, final Consumer<T> consumer, final T defaultObject) {
 		final AtomicReference<T> atomicReference = new AtomicReference<>();
 		
 		if(supplier != null) {
 			if(SwingUtilities.isEventDispatchThread()) {
 				atomicReference.set(supplier.get());
 			} else {
-				doInvokeAndWait(() -> atomicReference.set(supplier.get()));
+				invokeAndWait(() -> atomicReference.set(supplier.get()));
 			}
 		}
 		
@@ -286,7 +213,19 @@ final class ComponentUtilities {
 		return atomicReference.get();
 	}
 	
-	private static void doInvokeAndWait(final Runnable runnable) {
+	public static void add(final Component component, final Container container) {
+		if(component != null && container != null) {
+			runInEDT(() -> container.add(component));
+		}
+	}
+	
+	public static void addActionListener(final AbstractButton abstractButton, final ActionListener actionListener) {
+		if(abstractButton != null && actionListener != null) {
+			runInEDT(() -> abstractButton.addActionListener(actionListener));
+		}
+	}
+	
+	public static void invokeAndWait(final Runnable runnable) {
 		if(runnable != null) {
 			try {
 				SwingUtilities.invokeAndWait(runnable);
@@ -296,13 +235,90 @@ final class ComponentUtilities {
 		}
 	}
 	
-	private static void doRunInEDT(final Runnable runnable) {
+	public static void putClientProperty(final JComponent jComponent, final Object key, final Object value) {
+		if(jComponent != null && key != null) {
+			runInEDT(() -> jComponent.putClientProperty(key, value));
+		}
+	}
+	
+	public static void removeAllActionListeners(final AbstractButton abstractButton) {
+		if(abstractButton != null) {
+			runInEDT(() -> {
+				for(final ActionListener actionListener : abstractButton.getActionListeners()) {
+					abstractButton.removeActionListener(actionListener);
+				}
+			});
+		}
+	}
+	
+	public static void runInEDT(final Runnable runnable) {
 		if(runnable != null) {
 			if(SwingUtilities.isEventDispatchThread()) {
 				runnable.run();
 			} else {
-				doInvokeAndWait(runnable);
+				invokeAndWait(runnable);
 			}
+		}
+	}
+	
+	public static void setIgnoreRepaint(final Component component, final boolean ignoreRepaint) {
+		if(component != null) {
+			runInEDT(() -> {
+				getAllComponentsFrom(component).forEach(component0 -> component0.setIgnoreRepaint(ignoreRepaint));
+			});
+		}
+	}
+	
+	public static void setLocation(final Component component, final int x, final int y) {
+		if(component != null && x >= 0 && y >= 0) {
+			runInEDT(() -> component.setLocation(x, y));
+		}
+	}
+	
+	public static void setResizable(final Frame frame, final boolean isResizable) {
+		if(frame != null) {
+			runInEDT(() -> frame.setResizable(isResizable));
+		}
+	}
+	
+	public static void setSelected(final AbstractButton abstractButton, final boolean isSelected) {
+		if(abstractButton != null) {
+			runInEDT(() -> abstractButton.setSelected(isSelected));
+		}
+	}
+	
+	public static void setSize(final Component component, final int width, final int height) {
+		if(component != null && width >= 0 && height >= 0) {
+			runInEDT(() -> {
+				component.setMaximumSize(new Dimension(width, height));
+				component.setMinimumSize(new Dimension(width, height));
+				component.setPreferredSize(new Dimension(width, height));
+				component.setSize(new Dimension(width, height));
+			});
+		}
+	}
+	
+	public static void setText(final AbstractButton abstractButton, final String text) {
+		if(abstractButton != null && text != null) {
+			runInEDT(() -> abstractButton.setText(text));
+		}
+	}
+	
+	public static void setText(final JLabel jLabel, final String text) {
+		if(jLabel != null && text != null) {
+			runInEDT(() -> jLabel.setText(text));
+		}
+	}
+	
+	public static void setTitle(final Frame frame, final String title) {
+		if(frame != null) {
+			runInEDT(() -> frame.setTitle(title));
+		}
+	}
+	
+	public static void setVisible(final Component component, final boolean isVisible) {
+		if(component != null) {
+			runInEDT(() -> component.setVisible(isVisible));
 		}
 	}
 }

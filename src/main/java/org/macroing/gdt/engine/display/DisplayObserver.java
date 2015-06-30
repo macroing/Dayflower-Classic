@@ -18,6 +18,7 @@
  */
 package org.macroing.gdt.engine.display;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 import org.macroing.gdt.engine.renderer.Renderer;
@@ -34,10 +35,13 @@ public interface DisplayObserver {
 	 * <p>
 	 * The {@code Consumer} provided can be notified for each {@link Pixel} being rendered to by a concrete {@link Renderer}, so that the {@code Display} can update itself on a timely basis.
 	 * <p>
-	 * If either {@code pixelIterable} or {@code consumer} are {@code null}, a {@code NullPointerException} may be thrown. But no guarantees can be made. Although, if any of them are {@code null}, that's a bug, either in our or some third-party code.
+	 * If either {@code pixelIterable}, {@code consumer} or {@code booleanSupplier} are {@code null}, a {@code NullPointerException} may be thrown. But no guarantees can be made. Although, if any of them are {@code null}, that's a bug, either in our or some
+	 * third-party code.
 	 * 
 	 * @param pixelIterable an {@code Iterable} that iterates over {@code Pixel}s
 	 * @param consumer a {@code Consumer} that accepts {@code Pixel}s that have been rendered to
+	 * @param booleanSupplier a {@code BooleanSupplier} that tells us if we should cancel rendering
+	 * @throws NullPointerException thrown if, and only if, either {@code pixelIterable}, {@code consumer} or {@code booleanSupplier} are {@code null}
 	 */
-	void render(final PixelIterable pixelIterable, final Consumer<Pixel> consumer);
+	void render(final PixelIterable pixelIterable, final Consumer<Pixel> consumer, final BooleanSupplier booleanSupplier);
 }

@@ -157,7 +157,7 @@ public abstract class ConcurrentApplication extends Application {
 		
 		final
 		Display display = getDisplay();
-		display.setDisplayObserver((pixelIterable, consumer) -> {renderer.render(pixelIterable, pixel -> {consumer.accept(pixel);});});
+		display.setDisplayObserver((pixelIterable, consumer, booleanSupplier) -> renderer.render(pixelIterable, pixel -> consumer.accept(pixel), booleanSupplier));
 	}
 	
 	private void doHideDisplay() {

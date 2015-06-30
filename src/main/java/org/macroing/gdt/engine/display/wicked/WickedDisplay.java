@@ -107,6 +107,22 @@ public abstract class WickedDisplay extends Display {
 	public abstract Container<?> getContainer(final String id);
 	
 	/**
+	 * Returns a {@link Label} instance given an ID.
+	 * <p>
+	 * If {@code id} is {@code null}, a {@code NullPointerException} should be thrown.
+	 * <p>
+	 * If a {@link Component} with that ID already exists, and it's not a {@code Label}, an {@code IllegalArgumentException} should be thrown.
+	 * <p>
+	 * If no {@code Component} has been assigned that ID, an {@code IllegalArgumentException} should be thrown.
+	 * 
+	 * @param id the ID of the {@code Label} to return
+	 * @return a {@code Label} instance given an ID
+	 * @throws IllegalArgumentException should be thrown if, and only if, either no {@code Component} has been assigned the given ID, or a {@code Component} has been assigned the given ID, but it's not a {@code Label}
+	 * @throws NullPointerException should be thrown if, and only if, {@code id} is {@code null}
+	 */
+	public abstract Label<?> getLabel(final String id);
+	
+	/**
 	 * Returns a {@link Panel} instance given an ID.
 	 * <p>
 	 * If {@code id} is {@code null}, a {@code NullPointerException} should be thrown.
@@ -204,6 +220,19 @@ public abstract class WickedDisplay extends Display {
 	
 	//TODO: Comment...
 	public abstract WickedDisplay addCheckBox(final String id, final String parentId);
+	
+	//TODO: Comment...
+	public final WickedDisplay addLabel() {
+		return addLabel(doGetNextId());
+	}
+	
+	//TODO: Comment...
+	public final WickedDisplay addLabel(final String id) {
+		return addLabel(id, "0");
+	}
+	
+	//TODO: Comment...
+	public abstract WickedDisplay addLabel(final String id, final String parentId);
 	
 	//TODO: Comment...
 	public final WickedDisplay addPanel() {

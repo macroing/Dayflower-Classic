@@ -52,6 +52,8 @@ import org.macroing.gdt.engine.renderer.Renderer;
  */
 public final class Main extends ConcurrentApplication implements KeyboardObserver {
 	private static final String ID_CHECK_BOX_REALTIME_RENDERING = "CheckBox.RealtimeRendering";
+	private static final String ID_LABEL_SAMPLES = "Label.Samples";
+	private static final String ID_LABEL_SAMPLES_PER_SECOND = "Label.SamplesPerSecond";
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
@@ -133,7 +135,7 @@ public final class Main extends ConcurrentApplication implements KeyboardObserve
 			final
 			SimpleCamera simpleCamera = rayTracingRenderer.getSimpleCamera();
 			simpleCamera.setEye(new Point(50.0D + (Math.random() * 5.0D) - (Math.random() * 5.0D), 42.0D + (Math.random() * 5.0D) - (Math.random() * 5.0D), 295.6D + (Math.random() * 5.0D) - (Math.random() * 5.0D)));
-			simpleCamera.calculateOrthonormalBasisFor(Constants.getDefaultWidthScaled(), Constants.getDefaultHeightScaled());
+			simpleCamera.calculateOrthonormalBasis();
 			
 			final Display display = getDisplay();
 			
@@ -165,15 +167,13 @@ public final class Main extends ConcurrentApplication implements KeyboardObserve
 	private void doConfigureDisplay() {
 		final
 		WickedDisplay wickedDisplay = WickedDisplay.class.cast(getDisplay());
-		wickedDisplay.setSuperSamplingWithDownScaling(Constants.isSuperSamplingWithDownScaling());
-		wickedDisplay.setRenderingInRealtime(Constants.isRenderingInRealtime());
-		wickedDisplay.setHeightScale(Constants.getDefaultHeightScale());
-		wickedDisplay.setWidthScale(Constants.getDefaultWidthScale());
-		wickedDisplay.setResolution(Constants.getDefaultWidth(), Constants.getDefaultHeight());
-		wickedDisplay.setTitle(Constants.getTitle());
 		wickedDisplay.configure();
-		wickedDisplay.addCheckBox(ID_CHECK_BOX_REALTIME_RENDERING).getCheckBox(ID_CHECK_BOX_REALTIME_RENDERING).setLocation(10, 10).setText("Realtime rendering").setVisible(true);
-		wickedDisplay.getCheckBox(ID_CHECK_BOX_REALTIME_RENDERING).setOnSelectionChange(checkBox -> {});
+		wickedDisplay.addCheckBox(ID_CHECK_BOX_REALTIME_RENDERING).getCheckBox(ID_CHECK_BOX_REALTIME_RENDERING).setLocation(10, 10).setSelected(wickedDisplay.getConfiguration().isRenderingInRealtime()).setText("Realtime rendering").setVisible(true);
+		wickedDisplay.getCheckBox(ID_CHECK_BOX_REALTIME_RENDERING).setOnSelectionChange(checkBox -> {
+			wickedDisplay.getConfiguration().setRenderingInRealtime(wickedDisplay.getCheckBox(ID_CHECK_BOX_REALTIME_RENDERING).isSelected());
+		});
+//		wickedDisplay.addLabel(ID_LABEL_SAMPLES).getLabel(ID_LABEL_SAMPLES).setLocation(10, 50).setText("Samples: 0");
+//		wickedDisplay.addLabel(ID_LABEL_SAMPLES_PER_SECOND).getLabel(ID_LABEL_SAMPLES_PER_SECOND).setLocation(10, 70).setText("Samples per second: 0");
 	}
 	
 	private void doConfigureScene() {
@@ -184,8 +184,6 @@ public final class Main extends ConcurrentApplication implements KeyboardObserve
 			
 			final
 			Scene scene = rayTracingRenderer.getScene();
-			scene.setDepthUntilProbabilisticallyTerminatingRay(Constants.getDepthUntilProbabilisticallyTerminatingRay());
-			scene.setSkippingProbabilisticallyTerminatingRay(Constants.isSkippingProbabilisticallyTerminatingRay());
 		}
 	}
 	
@@ -199,7 +197,7 @@ public final class Main extends ConcurrentApplication implements KeyboardObserve
 			SimpleCamera simpleCamera = rayTracingRenderer.getSimpleCamera();
 			simpleCamera.setEye(new Point(50.0D, 42.0D, 295.6D));
 //			simpleCamera.setLookAt(new Point(50.0D, 42.0D, 295.5D));
-			simpleCamera.calculateOrthonormalBasisFor(Constants.getDefaultWidthScaled(), Constants.getDefaultHeightScaled());
+			simpleCamera.calculateOrthonormalBasis();
 		}
 	}
 }

@@ -23,35 +23,51 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.JPanel;
+
+import org.macroing.gdt.engine.configuration.Configuration;
 
 final class BufferedImageJPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	private final boolean isRenderingInRealtime;
-	private final BufferedImage bufferedImage;
-	private final int height;
-	private final int width;
+	private final AtomicReference<BufferedImage> bufferedImage = new AtomicReference<>();
+	private final AtomicReference<Configuration> configuration = new AtomicReference<>();
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	private BufferedImageJPanel(final BufferedImage bufferedImage, final boolean isRenderingInRealtime, final int width, final int height) {
-		this.bufferedImage = bufferedImage;
-		this.isRenderingInRealtime = isRenderingInRealtime;
-		this.width = width;
-		this.height = height;
+	private BufferedImageJPanel() {
+		
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
+	public void configure() {
+		setPreferredSize(new Dimension(this.configuration.get().getWidth(), this.configuration.get().getHeight()));
+		setLayout(new LayoutManagerImpl());
+	}
+	
 	@Override
 	public void paintComponent(final Graphics graphics) {
+		final Configuration configuration = this.configuration.get();
+		
+		if(configuration == null) {
+			return;
+		}
+		
+		final BufferedImage bufferedImage = this.bufferedImage.get();
+		
+		if(bufferedImage == null) {
+			return;
+		}
+		
 		final Graphics2D graphics2D = Graphics2D.class.cast(graphics);
 		
-		if(this.isRenderingInRealtime) {
+		if(configuration.isRenderingInRealtime()) {
 			graphics2D.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
 			graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 			graphics2D.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
@@ -61,17 +77,20 @@ final class BufferedImageJPanel extends JPanel {
 			graphics2D.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 		}
 		
-		graphics2D.drawImage(this.bufferedImage, 0, 0, this.width, this.height, null);
+		graphics2D.drawImage(bufferedImage, 0, 0, configuration.getWidth(), configuration.getHeight(), null);
+	}
+	
+	public void setBufferedImage(final BufferedImage bufferedImage) {
+		this.bufferedImage.set(Objects.requireNonNull(bufferedImage, "bufferedImage == null"));
+	}
+	
+	public void setConfiguration(final Configuration configuration) {
+		this.configuration.set(Objects.requireNonNull(configuration, "configuration == null"));
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	public static BufferedImageJPanel newInstance(final BufferedImage bufferedImage, final boolean isRenderingInRealtime, final int width, final int height) {
-		final
-		BufferedImageJPanel bufferedImageJPanel = new BufferedImageJPanel(bufferedImage, isRenderingInRealtime, width, height);
-		bufferedImageJPanel.setLayout(new LayoutManagerImpl());
-		bufferedImageJPanel.setPreferredSize(new Dimension(width, height));
-		
-		return bufferedImageJPanel;
+	public static BufferedImageJPanel newInstance() {
+		return new BufferedImageJPanel();
 	}
 }

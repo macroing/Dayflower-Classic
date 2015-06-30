@@ -20,6 +20,7 @@ package org.macroing.gdt.engine.renderer;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BooleanSupplier;
 
 import org.macroing.gdt.engine.camera.SimpleCamera;
 import org.macroing.gdt.engine.display.Pixel;
@@ -43,26 +44,26 @@ public final class PathTracingRenderer extends RayTracingRenderer {
 	private static final double SAMPLES_PER_THREAD_RECIPROCAL = 1.0D / Runtime.getRuntime().availableProcessors();
 	private static final int SAMPLE_FILTER_X = 2;
 	private static final int SAMPLE_FILTER_Y = 2;
-	private static final int SAMPLES = 1;
+	private static final int SAMPLES = 16;
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	private final AtomicInteger pass = new AtomicInteger();
-	private final AtomicLong elapsedTimeMillis = new AtomicLong(0L);
-	private final AtomicLong initialTimeMillis = new AtomicLong(System.currentTimeMillis());
-	private final AtomicLong samples = new AtomicLong(0L);
+	private final AtomicLong elapsedTimeMillis = new AtomicLong();
+	private final AtomicLong initialTimeMillis = new AtomicLong();
+	private final AtomicLong samples = new AtomicLong();
 	private final Filter filter = MitchellFilter.newInstance();
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	private PathTracingRenderer() {
-		
+		doReset();
 	}
 	
 	/**
 	 * Called when it's time to render.
 	 * <p>
-	 * If either {@code pixelIterable} or {@code rendererObserver} are {@code null}, a {@code NullPointerException} will be thrown.
+	 * If either {@code pixelIterable}, {@code rendererObserver} or {@code booleanSupplier} are {@code null}, a {@code NullPointerException} will be thrown.
 	 * <p>
 	 * A {@link PixelIterable} is a data structure that can be iterated. It iterates over {@link Pixel} instances, each one referring to an individual pixel on the screen. They contain methods to manipulate their data.
 	 * <p>
@@ -72,10 +73,11 @@ public final class PathTracingRenderer extends RayTracingRenderer {
 	 * 
 	 * @param pixelIterable a {@link PixelIterable} can iterate over {@link Pixel} instances, each one referring to an individual pixel on the screen
 	 * @param rendererObserver an entity observing per-pixel updates by a concrete {@code Renderer} implementation
-	 * @throws NullPointerException thrown if, and only if, either {@code pixelIterable} or {@code rendererObserver} are {@code null}
+	 * @param booleanSupplier a {@code BooleanSupplier} that tells us if we should cancel rendering
+	 * @throws NullPointerException thrown if, and only if, either {@code pixelIterable}, {@code rendererObserver} or {@code booleanSupplier} are {@code null}
 	 */
 	@Override
-	public void render(final PixelIterable pixelIterable, final RendererObserver rendererObserver) {
+	public void render(final PixelIterable pixelIterable, final RendererObserver rendererObserver, final BooleanSupplier booleanSupplier) {
 		final int width = pixelIterable.getWidth();
 		final int height = pixelIterable.getHeight();
 		
@@ -95,6 +97,12 @@ public final class PathTracingRenderer extends RayTracingRenderer {
 		final int pass = this.pass.getAndIncrement();
 		
 		for(final Pixel pixel : pixelIterable) {
+			if(booleanSupplier.getAsBoolean()) {
+				doReset();
+				
+				return;
+			}
+			
 			final int x = pixel.getX();
 			final int y = pixel.getY();
 			
@@ -148,5 +156,14 @@ public final class PathTracingRenderer extends RayTracingRenderer {
 	 */
 	public static PathTracingRenderer newInstance() {
 		return new PathTracingRenderer();
+	}
+	
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	private void doReset() {
+		this.pass.set(0);
+		this.elapsedTimeMillis.set(0L);
+		this.initialTimeMillis.set(System.currentTimeMillis());
+		this.samples.set(0L);
 	}
 }
