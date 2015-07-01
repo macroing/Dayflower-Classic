@@ -18,8 +18,6 @@
  */
 package org.macroing.gdt.engine.main;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.macroing.gdt.engine.application.Application;
 import org.macroing.gdt.engine.application.concurrent.ConcurrentApplication;
 import org.macroing.gdt.engine.camera.Camera;
@@ -57,10 +55,6 @@ public final class Main extends ConcurrentApplication implements KeyboardObserve
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	private final AtomicLong lastUpdate = new AtomicLong(0L);
-	
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-	
 	private Main() {
 		
 	}
@@ -83,17 +77,29 @@ public final class Main extends ConcurrentApplication implements KeyboardObserve
 	public void onKeyboardEvent(final KeyboardEvent keyboardEvent) {
 		switch(keyboardEvent.getKeyState()) {
 			case PRESSED:
-				break;
-			case RELEASED:
 				switch(keyboardEvent.getKey()) {
 					case KEY_A:
-						doAttemptToMoveSimpleCamera();
+						doAdjustSimpleCamera(-1.0D, 0.0D, 0.0D);
+						
+						break;
+					case KEY_D:
+						doAdjustSimpleCamera(1.0D, 0.0D, 0.0D);
+						
+						break;
+					case KEY_S:
+						doAdjustSimpleCamera(0.0D, 0.0D, 1.0D);
+						
+						break;
+					case KEY_W:
+						doAdjustSimpleCamera(0.0D, 0.0D, -1.0D);
 						
 						break;
 					default:
 						break;
 				}
 				
+				break;
+			case RELEASED:
 				break;
 			default:
 				break;
@@ -102,11 +108,7 @@ public final class Main extends ConcurrentApplication implements KeyboardObserve
 	
 	@Override
 	public void update() {
-		if(System.currentTimeMillis() - this.lastUpdate.get() > 10000L) {
-//			doAttemptToMoveSimpleCamera();
-			
-			this.lastUpdate.set(System.currentTimeMillis());
-		}
+		
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -126,15 +128,17 @@ public final class Main extends ConcurrentApplication implements KeyboardObserve
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	private void doAttemptToMoveSimpleCamera() {
+	private void doAdjustSimpleCamera(final double x, final double y, final double z) {
 		final Renderer renderer = getRenderer();
 		
 		if(renderer instanceof RayTracingRenderer) {
 			final RayTracingRenderer rayTracingRenderer = RayTracingRenderer.class.cast(renderer);
 			
-			final
-			SimpleCamera simpleCamera = rayTracingRenderer.getSimpleCamera();
-			simpleCamera.setEye(new Point(50.0D + (Math.random() * 5.0D) - (Math.random() * 5.0D), 42.0D + (Math.random() * 5.0D) - (Math.random() * 5.0D), 295.6D + (Math.random() * 5.0D) - (Math.random() * 5.0D)));
+			final SimpleCamera simpleCamera = rayTracingRenderer.getSimpleCamera();
+			
+			final Point eye = simpleCamera.getEye();
+			
+			simpleCamera.setEye(new Point(eye.getX() + x, eye.getY() + y, eye.getZ() + z));
 			simpleCamera.calculateOrthonormalBasis();
 			
 			final Display display = getDisplay();
@@ -142,6 +146,8 @@ public final class Main extends ConcurrentApplication implements KeyboardObserve
 			for(final PixelIterable pixelIterable : display.getPixelIterables()) {
 				pixelIterable.forEach(pixel -> pixel.clear());
 			}
+			
+			renderer.resetPass();
 		}
 	}
 	
@@ -171,6 +177,8 @@ public final class Main extends ConcurrentApplication implements KeyboardObserve
 		wickedDisplay.addCheckBox(ID_CHECK_BOX_REALTIME_RENDERING).getCheckBox(ID_CHECK_BOX_REALTIME_RENDERING).setLocation(10, 10).setSelected(wickedDisplay.getConfiguration().isRenderingInRealtime()).setText("Realtime rendering").setVisible(true);
 		wickedDisplay.getCheckBox(ID_CHECK_BOX_REALTIME_RENDERING).setOnSelectionChange(checkBox -> {
 			wickedDisplay.getConfiguration().setRenderingInRealtime(wickedDisplay.getCheckBox(ID_CHECK_BOX_REALTIME_RENDERING).isSelected());
+			wickedDisplay.getConfiguration().setDepthUntilProbabilisticallyTerminatingRay(wickedDisplay.getCheckBox(ID_CHECK_BOX_REALTIME_RENDERING).isSelected() ? 2 : 5);
+			wickedDisplay.getConfiguration().setSkippingProbabilisticallyTerminatingRay(wickedDisplay.getCheckBox(ID_CHECK_BOX_REALTIME_RENDERING).isSelected());
 		});
 //		wickedDisplay.addLabel(ID_LABEL_SAMPLES).getLabel(ID_LABEL_SAMPLES).setLocation(10, 50).setText("Samples: 0");
 //		wickedDisplay.addLabel(ID_LABEL_SAMPLES_PER_SECOND).getLabel(ID_LABEL_SAMPLES_PER_SECOND).setLocation(10, 70).setText("Samples per second: 0");

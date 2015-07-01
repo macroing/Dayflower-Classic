@@ -22,15 +22,18 @@ import java.lang.reflect.Field;//TODO: Fix this class and remove this comment on
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.IntPredicate;
 
 import org.macroing.gdt.engine.configuration.Configuration;
 import org.macroing.gdt.engine.configuration.ConfigurationObserver;
 import org.macroing.gdt.engine.util.PRNG;
 
 public final class Scene implements ConfigurationObserver {
+	private boolean isRenderingInRealtime;
 	private boolean isSkippingProbabilisticallyTerminatingRay;
 	private Configuration configuration;
 	private int depthUntilProbabilisticallyTerminatingRay;
+	private IntPredicate intPredicate = pass -> this.isRenderingInRealtime;
 	private final List<Shape> shapes = new ArrayList<>();
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -67,7 +70,7 @@ public final class Scene implements ConfigurationObserver {
 			final double u = pointUV.getX();
 			final double v = pointUV.getY();
 			
-			if(pass == -1) {
+			if(this.intPredicate.test(pass)) {
 				return shape.getTexture().getColorAt(u, v);
 			}
 			
@@ -150,6 +153,7 @@ public final class Scene implements ConfigurationObserver {
 	
 	@Override
 	public void onUpdate(final Configuration configuration) {
+		this.isRenderingInRealtime = configuration.isRenderingInRealtime();
 		this.isSkippingProbabilisticallyTerminatingRay = configuration.isSkippingProbabilisticallyTerminatingRay();
 		this.depthUntilProbabilisticallyTerminatingRay = configuration.getDepthUntilProbabilisticallyTerminatingRay();
 	}

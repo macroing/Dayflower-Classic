@@ -113,7 +113,9 @@ final class ComponentUtilities {
 	}
 	
 	public static JButton newJButton() {
-		return runInEDT(() -> new JButton());
+		return runInEDT(() -> new JButton(), jButton -> {
+			jButton.setFocusable(false);
+		});
 	}
 	
 	public static JCheckBox newJCheckBox() {
@@ -121,6 +123,7 @@ final class ComponentUtilities {
 			jCheckBox.setBorderPainted(false);
 			jCheckBox.setDisabledIcon(Icons.getTranslucentIcon(jCheckBox, J_CHECK_BOX_DISABLED_ICON, 200.0F, 200.0F, 200.0F));
 			jCheckBox.setDisabledSelectedIcon(Icons.getTranslucentIcon(jCheckBox, J_CHECK_BOX_DISABLED_SELECTED_ICON, 200.0F, 200.0F, 200.0F));
+			jCheckBox.setFocusable(false);
 			jCheckBox.setFocusPainted(false);
 			jCheckBox.setForeground(Color.WHITE);
 			jCheckBox.setIcon(Icons.getTranslucentIcon(jCheckBox, J_CHECK_BOX_ICON, 255.0F, 255.0F, 255.0F));
@@ -144,6 +147,7 @@ final class ComponentUtilities {
 	
 	public static JLabel newJLabel() {
 		return runInEDT(() -> new JLabel(), jLabel -> {
+			jLabel.setFocusable(false);
 			jLabel.setForeground(Color.WHITE);
 		});
 	}

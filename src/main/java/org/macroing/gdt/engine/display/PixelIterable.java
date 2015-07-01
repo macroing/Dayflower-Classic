@@ -35,12 +35,10 @@ import java.util.NoSuchElementException;
  * @author J&#246;rgen Lundgren
  */
 public final class PixelIterable implements Iterable<Pixel> {
-	private static int currentIndex = 0;
 	private final int height;
 	private final int width;
 	private final Map<Integer, Pixel> pixelMap;
 	private final Pixel[] pixels;
-	private int index = currentIndex;
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
@@ -132,10 +130,6 @@ public final class PixelIterable implements Iterable<Pixel> {
 		return this.pixelMap.get(Integer.valueOf(y * this.width + x));
 	}
 	
-	public int getIndex() {
-		return this.index;
-	}
-	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	/**
@@ -182,7 +176,6 @@ public final class PixelIterable implements Iterable<Pixel> {
 				
 				pixelIterableList.add(pixelIterable);
 			}
-			currentIndex++;
 			
 			return pixelIterableList;
 		}

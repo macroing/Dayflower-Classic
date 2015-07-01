@@ -44,7 +44,7 @@ public final class PathTracingRenderer extends RayTracingRenderer {
 	private static final double SAMPLES_PER_THREAD_RECIPROCAL = 1.0D / Runtime.getRuntime().availableProcessors();
 	private static final int SAMPLE_FILTER_X = 2;
 	private static final int SAMPLE_FILTER_Y = 2;
-	private static final int SAMPLES = 16;
+	private static final int SAMPLES = 1;
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
@@ -108,7 +108,7 @@ public final class PathTracingRenderer extends RayTracingRenderer {
 			
 //			for(int sampleY = 0; sampleY < SAMPLE_FILTER_Y; sampleY++) {
 //				for(int sampleX = 0; sampleX < SAMPLE_FILTER_X; sampleX++) {
-					for(int sample = 0; sample < SAMPLES; sample++) {
+//					for(int sample = 0; sample < SAMPLES; sample++) {
 						final double randomX = 2.0D * pRNG.nextDouble();//[0.0D, 2.0D)
 						final double randomY = 2.0D * pRNG.nextDouble();//[0.0D, 2.0D)
 						
@@ -131,7 +131,7 @@ public final class PathTracingRenderer extends RayTracingRenderer {
 						
 						pixel.addSubSamples(1);
 						pixel.getRGBSpectrum().add(spectrum);
-					}
+//					}
 //				}
 //			}
 			
@@ -145,6 +145,11 @@ public final class PathTracingRenderer extends RayTracingRenderer {
 		final double samplesPerSecond = samples / (elapsedTimeMillis / 1000L);
 		
 		System.out.printf("Samples: %.2f Samples Per Second: %.2f%n", Double.valueOf(samples), Double.valueOf(samplesPerSecond));
+	}
+	
+	@Override
+	public void resetPass() {
+		this.pass.set(0);
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////

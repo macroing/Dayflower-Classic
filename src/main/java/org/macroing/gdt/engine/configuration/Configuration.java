@@ -54,7 +54,7 @@ public final class Configuration {
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	private final AtomicBoolean isRenderingInRealtime = new AtomicBoolean(true);
+	private final AtomicBoolean isRenderingInRealtime = new AtomicBoolean();
 	private final AtomicBoolean isSkippingProbabilisticallyTerminatingRay = new AtomicBoolean();
 	private final AtomicBoolean isSupersamplingWithDownscaling = new AtomicBoolean();
 	private final AtomicInteger depthUntilProbabilisticallyTerminatingRay = new AtomicInteger(DEFAULT_DEPTH_UNTIL_PROBABILISTICALLY_TERMINATING_RAY);

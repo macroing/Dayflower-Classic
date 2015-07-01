@@ -83,6 +83,9 @@ public abstract class Renderer {
 	 */
 	public abstract void render(final PixelIterable pixelIterable, final RendererObserver rendererObserver, final BooleanSupplier booleanSupplier);
 	
+	//TODO: Decide if this method should be here or not.
+	public abstract void resetPass();
+	
 	/**
 	 * Sets the {@link PRNG} instance to use.
 	 * <p>
