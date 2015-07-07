@@ -74,7 +74,7 @@ public final class Scene implements ConfigurationObserver {
 				return shape.getTexture().getColorAt(u, v);
 			}
 			
-			intersection.calculateSurfaceNormal();
+			intersection.calculateSurfaceNormal(u, v);
 			intersection.calculateSurfaceNormalProperlyOriented();
 			
 			final Ray ray = intersection.getRay();
@@ -102,6 +102,7 @@ public final class Scene implements ConfigurationObserver {
 		return RGBSpectrum.black();
 	}
 	
+	/*
 	public Spectrum sampleLights(final Intersection intersection, final PRNG pRNG) {
 		final Spectrum emission = new RGBSpectrum(0.0D, 0.0D, 0.0D);
 		
@@ -146,6 +147,7 @@ public final class Scene implements ConfigurationObserver {
 		
 		return emission;
 	}
+	*/
 	
 	public void addShape(final Shape shape) {
 		this.shapes.add(Objects.requireNonNull(shape, "shape == null"));
@@ -176,15 +178,16 @@ public final class Scene implements ConfigurationObserver {
 	public static Scene newCornellBox() {
 		final
 		Scene scene = new Scene();
-		scene.addShape(Sphere.newInstance(1.e5D, SpecularMaterial.newInstance(Material.REFRACTIVE_INDEX_GLASS, RGBSpectrum.black()), new Point(1.e5D + 1.0D, 40.8D, 81.6D), SolidTexture.newInstance(1, 1, new RGBSpectrum(0.75D, 0.25D, 0.25D))));
-		scene.addShape(Sphere.newInstance(1.e5D, DiffuseMaterial.newInstance(Material.REFRACTIVE_INDEX_GLASS, RGBSpectrum.black()), new Point(-1.e5D + 99.0D, 40.8D, 81.6D), SolidTexture.newInstance(1, 1, new RGBSpectrum(0.25D, 0.25D, 0.75D))));
-		scene.addShape(Sphere.newInstance(1.e5D, SpecularMaterial.newInstance(Material.REFRACTIVE_INDEX_GLASS, RGBSpectrum.black()), new Point(50.0D, 40.8D, 1.e5D), SolidTexture.newInstance(1, 1, new RGBSpectrum(0.75D, 0.75D, 0.75D))));
-		scene.addShape(Sphere.newInstance(1.e5D, DiffuseMaterial.newInstance(Material.REFRACTIVE_INDEX_GLASS, RGBSpectrum.black()), new Point(50.0D, 40.8D, -1.e5D + 170.0D), SolidTexture.newInstance(1, 1, new RGBSpectrum(0.5D, 0.5D, 0.5D))));
-		scene.addShape(Sphere.newInstance(1.e5D, DiffuseMaterial.newInstance(Material.REFRACTIVE_INDEX_GLASS, RGBSpectrum.black()), new Point(50.0D, 1.e5D, 81.6D), SolidTexture.newInstance(1, 1, new RGBSpectrum(0.75D, 0.75D, 0.75D))));
-		scene.addShape(Sphere.newInstance(1.e5D, DiffuseMaterial.newInstance(Material.REFRACTIVE_INDEX_GLASS, RGBSpectrum.black()), new Point(50.0D, -1.e5D + 81.6D, 81.6D), SolidTexture.newInstance(1, 1, new RGBSpectrum(0.75D, 0.75D, 0.75D))));
-		scene.addShape(Sphere.newInstance(16.5D, DiffuseMaterial.newInstance(Material.REFRACTIVE_INDEX_GLASS, RGBSpectrum.black()), new Point(27.0D, 16.5D, 47.0D), SolidTexture.newInstance(1, 1, new RGBSpectrum(0.5D * 0.999D, 1.0D * 0.999D, 0.5D * 0.999D))));
-		scene.addShape(Sphere.newInstance(16.5D, RefractiveMaterial.newInstance(Material.REFRACTIVE_INDEX_GLASS, RGBSpectrum.black()), new Point(73.0D, 16.5D, 78.0D), SolidTexture.newInstance(1, 1, new RGBSpectrum(1.0D * 0.999D, 1.0D * 0.999D, 1.0D * 0.999D))));
-		scene.addShape(Sphere.newInstance(600.0D, DiffuseMaterial.newInstance(Material.REFRACTIVE_INDEX_GLASS, new RGBSpectrum(12.0D, 12.0D, 12.0D)), new Point(50.0D, 681.6D - 0.27D, 81.6D), SolidTexture.newInstance(1, 1, RGBSpectrum.black())));
+		scene.addShape(Sphere.newInstance(SpecularMaterial.newInstance(Material.REFRACTIVE_INDEX_GLASS, RGBSpectrum.black()), SolidTexture.newInstance(1, 1, new RGBSpectrum(0.75D, 0.25D, 0.25D)), 1.e5D, new Point(1.e5D + 1.0D, 40.8D, 81.6D)));
+		scene.addShape(Sphere.newInstance(DiffuseMaterial.newInstance(Material.REFRACTIVE_INDEX_GLASS, RGBSpectrum.black()), SolidTexture.newInstance(1, 1, new RGBSpectrum(0.25D, 0.25D, 0.75D)), 1.e5D, new Point(-1.e5D + 99.0D, 40.8D, 81.6D)));
+		scene.addShape(Sphere.newInstance(SpecularMaterial.newInstance(Material.REFRACTIVE_INDEX_GLASS, RGBSpectrum.black()), SolidTexture.newInstance(1, 1, new RGBSpectrum(0.75D, 0.75D, 0.75D)), 1.e5D, new Point(50.0D, 40.8D, 1.e5D)));
+		scene.addShape(Sphere.newInstance(DiffuseMaterial.newInstance(Material.REFRACTIVE_INDEX_GLASS, RGBSpectrum.black()), SolidTexture.newInstance(1, 1, new RGBSpectrum(0.5D, 0.5D, 0.5D)), 1.e5D, new Point(50.0D, 40.8D, -1.e5D + 170.0D)));
+		scene.addShape(Sphere.newInstance(DiffuseMaterial.newInstance(Material.REFRACTIVE_INDEX_GLASS, RGBSpectrum.black()), SolidTexture.newInstance(1, 1, new RGBSpectrum(0.75D, 0.75D, 0.75D)), 1.e5D, new Point(50.0D, 1.e5D, 81.6D)));
+		scene.addShape(Sphere.newInstance(DiffuseMaterial.newInstance(Material.REFRACTIVE_INDEX_GLASS, RGBSpectrum.black()), SolidTexture.newInstance(1, 1, new RGBSpectrum(0.75D, 0.75D, 0.75D)), 1.e5D, new Point(50.0D, -1.e5D + 81.6D, 81.6D)));
+		scene.addShape(Sphere.newInstance(DiffuseMaterial.newInstance(Material.REFRACTIVE_INDEX_GLASS, RGBSpectrum.black()), NormalMapTexture.newInstance(SimpleTexture.newInstance("resources/jar/org/macroing/gdt/engine/geometry/Texture.jpg")/*SolidTexture.newInstance(1, 1, new RGBSpectrum(0.5D * 0.999D, 1.0D * 0.999D, 0.5D * 0.999D))*/, "resources/jar/org/macroing/gdt/engine/geometry/NormalMap.jpg")/*SolidTexture.newInstance(1, 1, new RGBSpectrum(0.5D * 0.999D, 1.0D * 0.999D, 0.5D * 0.999D))*/, 16.5D, new Point(27.0D, 16.5D, 47.0D)));
+		scene.addShape(Sphere.newInstance(RefractiveMaterial.newInstance(Material.REFRACTIVE_INDEX_GLASS, RGBSpectrum.black()), SolidTexture.newInstance(1, 1, new RGBSpectrum(1.0D * 0.999D, 1.0D * 0.999D, 1.0D * 0.999D)), 16.5D, new Point(73.0D, 16.5D, 78.0D)));
+		scene.addShape(Sphere.newInstance(DiffuseMaterial.newInstance(Material.REFRACTIVE_INDEX_GLASS, new RGBSpectrum(12.0D, 12.0D, 12.0D)), SolidTexture.newInstance(1, 1, RGBSpectrum.black()), 600.0D, new Point(50.0D, 681.6D - 0.27D, 81.6D)));
+		scene.addShape(Triangle.newInstance(DiffuseMaterial.newInstance(Material.REFRACTIVE_INDEX_GLASS, new RGBSpectrum(12.0D, 12.0D, 12.0D)), SolidTexture.newInstance(1, 1, RGBSpectrum.black()), Point.valueOf(30.0D, 20.0D, 10.0D), Point.valueOf(50.0D, 20.0D, 50.0D), Point.valueOf(40.0D, 40.0D, 30.0D)));
 		
 		return scene;
 	}

@@ -42,4 +42,6 @@ public abstract class Texture {
 	}
 	
 	public abstract Spectrum getColorAt(final double u, final double v);
+	
+	public abstract Vector getSurfaceNormalAt(final double u, final double v, final Vector surfaceNormal);
 }

@@ -23,14 +23,12 @@ import java.util.Objects;
 
 public abstract class Shape {
 	private final Material material;
-	private final Point position;
 	private final Texture texture;
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	protected Shape(final Material material, final Point position, final Texture texture) {
+	protected Shape(final Material material, final Texture texture) {
 		this.material = Objects.requireNonNull(material, "material == null");
-		this.position = Objects.requireNonNull(position, "position == null");
 		this.texture = Objects.requireNonNull(texture, "texture == null");
 	}
 	
@@ -46,13 +44,11 @@ public abstract class Shape {
 		return this.material;
 	}
 	
-	public final Point getPosition() {
-		return this.position.copy();
-	}
-	
 	public abstract Point getUV(final Point surfaceIntersectionPoint);
 	
 	public final Texture getTexture() {
 		return this.texture;
 	}
+	
+	public abstract Vector getSurfaceNormal(final Point surfaceIntersectionPoint);
 }

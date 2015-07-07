@@ -136,9 +136,14 @@ public final class Intersection {
 	
 	/**
 	 * Calculates the surface normal.
+	 * <p>
+	 * The UV-coordinates provided may be used to calculate a different surface normal, based on for example, a normal map.
+	 * 
+	 * @param u the U-coordinate
+	 * @param v the V-coordinate
 	 */
-	public void calculateSurfaceNormal() {
-		setSurfaceNormal(this.surfaceIntersectionPoint.toVector().subtract(this.shape.getPosition().toVector()).normalize());
+	public void calculateSurfaceNormal(final double u, final double v) {
+		setSurfaceNormal(this.shape.getTexture().getSurfaceNormalAt(u, v, this.shape.getSurfaceNormal(this.surfaceIntersectionPoint)));
 	}
 	
 	/**

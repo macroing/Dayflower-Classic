@@ -39,6 +39,11 @@ public final class SolidTexture extends Texture {
 		return this.spectrum.copy();
 	}
 	
+	@Override
+	public Vector getSurfaceNormalAt(final double u, final double v, final Vector surfaceNormal) {
+		return surfaceNormal;
+	}
+	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	public static SolidTexture newInstance(final int width, final int height, final Spectrum spectrum) {

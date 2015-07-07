@@ -79,19 +79,19 @@ public final class Main extends ConcurrentApplication implements KeyboardObserve
 			case PRESSED:
 				switch(keyboardEvent.getKey()) {
 					case KEY_A:
-						doAdjustSimpleCamera(-1.0D, 0.0D, 0.0D);
+						doAdjustSimpleCamera(-5.0D, 0.0D, 0.0D);
 						
 						break;
 					case KEY_D:
-						doAdjustSimpleCamera(1.0D, 0.0D, 0.0D);
+						doAdjustSimpleCamera(5.0D, 0.0D, 0.0D);
 						
 						break;
 					case KEY_S:
-						doAdjustSimpleCamera(0.0D, 0.0D, 1.0D);
+						doAdjustSimpleCamera(0.0D, 0.0D, 5.0D);
 						
 						break;
 					case KEY_W:
-						doAdjustSimpleCamera(0.0D, 0.0D, -1.0D);
+						doAdjustSimpleCamera(0.0D, 0.0D, -5.0D);
 						
 						break;
 					default:

@@ -19,16 +19,19 @@
 package org.macroing.gdt.engine.geometry;
 
 import java.lang.reflect.Field;//TODO: Fix this class and remove this comment once done. Add Javadocs etc.
+import java.util.Objects;
 
 public final class Sphere extends Shape {
-	private double radius;
+	private final double radius;
+	private final Point position;
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	private Sphere(final double radius, final Material material, final Point position, final Texture texture) {
-		super(material, position, texture);
+	private Sphere(final Material material, final Texture texture, final double radius, final Point position) {
+		super(material, texture);
 		
 		this.radius = radius;
+		this.position = Objects.requireNonNull(position, "position == null");
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -37,7 +40,7 @@ public final class Sphere extends Shape {
 	public boolean isIntersecting(final Intersection intersection) {
 		final Ray ray = intersection.getRay();
 		
-		final Vector delta = getPosition().toVector().subtract(ray.getOrigin().toVector());
+		final Vector delta = this.position.toVector().subtract(ray.getOrigin().toVector());
 		
 		final double epsilon = 1.e-4D;
 		final double b = delta.dotProduct(ray.getDirection());
@@ -59,34 +62,46 @@ public final class Sphere extends Shape {
 			}
 		}
 		
-		if(distance != 0.0D && distance < intersection.getDistance()) {
+		if(distance > epsilon && distance < intersection.getDistance()) {
 			intersection.setDistance(distance);
 			intersection.setShape(this);
 		}
 		
-		return distance != 0.0D;
+		return distance > epsilon;
 	}
 	
 	public double getRadius() {
 		return this.radius;
 	}
 	
-	@Override
-	public Point getUV(final Point surfaceIntersectionPoint) {
-		return surfaceIntersectionPoint.toVector().subtract(getPosition().toVector()).normalize().toPoint();
+	public Point getPosition() {
+		return this.position.copy();
 	}
 	
-	public void setRadius(final double radius) {
-		this.radius = radius;
+	@Override
+	public Point getUV(final Point surfaceIntersectionPoint) {
+		final Vector distance = this.position.copyAndSubtract(surfaceIntersectionPoint).toVector().normalize();
+		
+		final double u = 0.5D + Math.atan2(distance.getX(), distance.getZ()) / (2.0D * Math.PI);
+		final double v = 0.5D + Math.asin(distance.getY()) / Math.PI;
+		
+		return Point.valueOf(u, v, 0.0D);
+		
+//		return surfaceIntersectionPoint.toVector().subtract(this.position.toVector()).normalize().toPoint();
+	}
+	
+	@Override
+	public Vector getSurfaceNormal(final Point surfaceIntersectionPoint) {
+		return surfaceIntersectionPoint.toVector().subtract(this.position.toVector()).normalize();
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	public static Sphere newInstance(final double radius, final Material material, final Point position) {
-		return new Sphere(radius, material, position, SolidTexture.newInstance(1, 1, new RGBSpectrum(0.0D, 0.0D, 0.0D)));
+	public static Sphere newInstance(final Material material, final double radius, final Point position) {
+		return new Sphere(material, SolidTexture.newInstance(1, 1, new RGBSpectrum(0.0D, 0.0D, 0.0D)), radius, position);
 	}
 	
-	public static Sphere newInstance(final double radius, final Material material, final Point position, final Texture texture) {
-		return new Sphere(radius, material, position, texture);
+	public static Sphere newInstance(final Material material, final Texture texture, final double radius, final Point position) {
+		return new Sphere(material, texture, radius, position);
 	}
 }

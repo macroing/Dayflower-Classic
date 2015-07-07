@@ -43,6 +43,8 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 
 final class ComponentUtilities {
@@ -74,6 +76,12 @@ final class ComponentUtilities {
 	
 	static {
 		MetalLookAndFeel.setCurrentTheme(new MetalThemeImpl());
+		
+		try {
+			UIManager.setLookAndFeel(new MetalLookAndFeel());
+		} catch(final UnsupportedLookAndFeelException e) {
+			
+		}
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
