@@ -21,6 +21,8 @@ package org.macroing.gdt.engine.renderer;
 import java.util.Objects;
 
 import org.macroing.gdt.engine.camera.Camera;
+import org.macroing.gdt.engine.camera.NewSimpleCamera;
+import org.macroing.gdt.engine.camera.OldSimpleCamera;
 import org.macroing.gdt.engine.camera.PerspectiveCamera;
 import org.macroing.gdt.engine.camera.SimpleCamera;
 import org.macroing.gdt.engine.geometry.Scene;
@@ -37,7 +39,7 @@ import org.macroing.gdt.engine.geometry.Scene;
  */
 public abstract class RayTracingRenderer extends Renderer {
 	private Camera camera = PerspectiveCamera.newInstance();
-	private SimpleCamera simpleCamera = SimpleCamera.newInstance();
+	private SimpleCamera simpleCamera = NewSimpleCamera.newInstance();
 	private Scene scene = Scene.newCornellBox();
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////

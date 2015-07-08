@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BooleanSupplier;
 
+import org.macroing.gdt.engine.camera.Camera;
 import org.macroing.gdt.engine.camera.SimpleCamera;
 import org.macroing.gdt.engine.display.Pixel;
 import org.macroing.gdt.engine.display.PixelIterable;
@@ -32,6 +33,7 @@ import org.macroing.gdt.engine.geometry.Intersection;
 import org.macroing.gdt.engine.geometry.Ray;
 import org.macroing.gdt.engine.geometry.Scene;
 import org.macroing.gdt.engine.geometry.Spectrum;
+import org.macroing.gdt.engine.sampler.Sample;
 import org.macroing.gdt.engine.util.PRNG;
 
 /**
@@ -86,6 +88,8 @@ public final class PathTracingRenderer extends RayTracingRenderer {
 		
 		final SimpleCamera simpleCamera = getSimpleCamera();
 		
+		final Camera camera = getCamera();
+		
 		final PRNG pRNG = getPRNG();
 		
 		final Scene scene = getScene();
@@ -106,6 +110,11 @@ public final class PathTracingRenderer extends RayTracingRenderer {
 			final int x = pixel.getX();
 			final int y = pixel.getY();
 			
+			final
+			Sample sample = Sample.newInstance();
+			sample.setX(x);
+			sample.setY(y);
+			
 //			for(int sampleY = 0; sampleY < SAMPLE_FILTER_Y; sampleY++) {
 //				for(int sampleX = 0; sampleX < SAMPLE_FILTER_X; sampleX++) {
 //					for(int sample = 0; sample < SAMPLES; sample++) {
@@ -122,7 +131,11 @@ public final class PathTracingRenderer extends RayTracingRenderer {
 						
 //						System.out.printf("U=%f, V=%f%n", u, v);
 						
-						final Ray ray = simpleCamera.newRay(u, v);//(-0.5D, 0.5D), (-0.5D, 0.5D)?
+						sample.setU(u);
+						sample.setV(v);
+						
+						final Ray ray = camera.newRay(sample);
+//						final Ray ray = simpleCamera.newRay(u, v);//(-0.5D, 0.5D), (-0.5D, 0.5D)?
 						
 						intersection.setDistance(Constants.INFINITY);
 						intersection.setRay(ray);

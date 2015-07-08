@@ -264,7 +264,7 @@ public final class PerspectiveCamera extends ProjectiveCamera {
 	public static PerspectiveCamera newInstance() {
 		final
 		PerspectiveCamera perspectiveCamera = new PerspectiveCamera();
-		perspectiveCamera.setResolution(800, 800);
+		perspectiveCamera.setResolution(1024, 768);
 		perspectiveCamera.configure();
 		
 		return perspectiveCamera;

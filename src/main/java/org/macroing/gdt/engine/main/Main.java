@@ -21,6 +21,7 @@ package org.macroing.gdt.engine.main;
 import org.macroing.gdt.engine.application.Application;
 import org.macroing.gdt.engine.application.concurrent.ConcurrentApplication;
 import org.macroing.gdt.engine.camera.Camera;
+import org.macroing.gdt.engine.camera.OldSimpleCamera;
 import org.macroing.gdt.engine.camera.SimpleCamera;
 import org.macroing.gdt.engine.display.Display;
 import org.macroing.gdt.engine.display.PixelIterable;
@@ -31,6 +32,9 @@ import org.macroing.gdt.engine.geometry.Transform;
 import org.macroing.gdt.engine.geometry.Vector;
 import org.macroing.gdt.engine.input.KeyboardEvent;
 import org.macroing.gdt.engine.input.KeyboardObserver;
+import org.macroing.gdt.engine.input.Mouse;
+import org.macroing.gdt.engine.input.MouseEvent;
+import org.macroing.gdt.engine.input.MouseObserver;
 import org.macroing.gdt.engine.renderer.PathTracingRenderer;
 import org.macroing.gdt.engine.renderer.RayTracingRenderer;
 import org.macroing.gdt.engine.renderer.Renderer;
@@ -48,7 +52,7 @@ import org.macroing.gdt.engine.renderer.Renderer;
  * @since 1.0.0
  * @author J&#246;rgen Lundgren
  */
-public final class Main extends ConcurrentApplication implements KeyboardObserver {
+public final class Main extends ConcurrentApplication implements KeyboardObserver, MouseObserver {
 	private static final String ID_CHECK_BOX_REALTIME_RENDERING = "CheckBox.RealtimeRendering";
 	private static final String ID_LABEL_SAMPLES = "Label.Samples";
 	private static final String ID_LABEL_SAMPLES_PER_SECOND = "Label.SamplesPerSecond";
@@ -79,18 +83,42 @@ public final class Main extends ConcurrentApplication implements KeyboardObserve
 			case PRESSED:
 				switch(keyboardEvent.getKey()) {
 					case KEY_A:
+						doAdjustCamera(-0.2D, 0.0D, 0.0D);
 						doAdjustSimpleCamera(-5.0D, 0.0D, 0.0D);
 						
 						break;
+					case KEY_C:
+						doClear();
+						
+						break;
 					case KEY_D:
+						doAdjustCamera(0.2D, 0.0D, 0.0D);
 						doAdjustSimpleCamera(5.0D, 0.0D, 0.0D);
 						
 						break;
+					case KEY_ESC:
+						stop();
+						
+						break;
+					case KEY_M:
+						final
+						Mouse mouse = Mouse.getInstance();
+						mouse.setRecentering(!mouse.isRecentering());
+						
+						break;
+					case KEY_R:
+						final
+						WickedDisplay wickedDisplay = WickedDisplay.class.cast(getDisplay());
+						wickedDisplay.getCheckBox(ID_CHECK_BOX_REALTIME_RENDERING).setSelected(!wickedDisplay.getCheckBox(ID_CHECK_BOX_REALTIME_RENDERING).isSelected());
+						
+						break;
 					case KEY_S:
+						doAdjustCamera(0.0D, 0.0D, -0.2D);
 						doAdjustSimpleCamera(0.0D, 0.0D, 5.0D);
 						
 						break;
 					case KEY_W:
+						doAdjustCamera(0.0D, 0.0D, 0.2D);
 						doAdjustSimpleCamera(0.0D, 0.0D, -5.0D);
 						
 						break;
@@ -100,6 +128,31 @@ public final class Main extends ConcurrentApplication implements KeyboardObserve
 				
 				break;
 			case RELEASED:
+				break;
+			default:
+				break;
+		}
+	}
+	
+	@Override
+	@SuppressWarnings("incomplete-switch")
+	public void onMouseEvent(final MouseEvent mouseEvent) {
+		switch(mouseEvent.getMouseState()) {
+			case MOVED_DOWN:
+				doRotateCameraAlongX(0.5D);
+				
+				break;
+			case MOVED_LEFT:
+				doRotateCameraAlongY(-0.5D);
+				
+				break;
+			case MOVED_RIGHT:
+				doRotateCameraAlongY(0.5D);
+				
+				break;
+			case MOVED_UP:
+				doRotateCameraAlongX(-0.5D);
+				
 				break;
 			default:
 				break;
@@ -128,7 +181,24 @@ public final class Main extends ConcurrentApplication implements KeyboardObserve
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
+	private void doAdjustCamera(final double x, final double y, final double z) {
+		final Renderer renderer = getRenderer();
+		
+		if(renderer instanceof RayTracingRenderer) {
+			final RayTracingRenderer rayTracingRenderer = RayTracingRenderer.class.cast(renderer);
+			
+			final Camera camera = rayTracingRenderer.getCamera();
+			
+			final Transform transform = camera.getCameraToWorld();
+			
+			transform.set(transform.multiply(Transform.translate(x, y, z)));
+			
+			doClear();
+		}
+	}
+	
 	private void doAdjustSimpleCamera(final double x, final double y, final double z) {
+		/*
 		final Renderer renderer = getRenderer();
 		
 		if(renderer instanceof RayTracingRenderer) {
@@ -141,14 +211,21 @@ public final class Main extends ConcurrentApplication implements KeyboardObserve
 			simpleCamera.setEye(new Point(eye.getX() + x, eye.getY() + y, eye.getZ() + z));
 			simpleCamera.calculateOrthonormalBasis();
 			
-			final Display display = getDisplay();
-			
-			for(final PixelIterable pixelIterable : display.getPixelIterables()) {
-				pixelIterable.forEach(pixel -> pixel.clear());
-			}
-			
-			renderer.resetPass();
+			doClear();
 		}
+		*/
+	}
+	
+	private void doClear() {
+		final Display display = getDisplay();
+		
+		for(final PixelIterable pixelIterable : display.getPixelIterables()) {
+			pixelIterable.forEach(pixel -> pixel.clear());
+		}
+		
+		final
+		Renderer renderer = getRenderer();
+		renderer.resetPass();
 	}
 	
 	private void doConfigureCamera() {
@@ -159,7 +236,7 @@ public final class Main extends ConcurrentApplication implements KeyboardObserve
 			
 			final Camera camera = rayTracingRenderer.getCamera();
 			
-			final Point source = Point.zero();
+			final Point source = Point.valueOf(50.0D, 42.0D, 295.6D);//Point.zero();
 			final Point target = new Point(0.0D, 0.0D, -2.0D);
 			
 			final Vector up = Vector.y();
@@ -185,14 +262,13 @@ public final class Main extends ConcurrentApplication implements KeyboardObserve
 	}
 	
 	private void doConfigureScene() {
-		final Renderer renderer = getRenderer();
+//		final Renderer renderer = getRenderer();
 		
-		if(renderer instanceof RayTracingRenderer) {
-			final RayTracingRenderer rayTracingRenderer = RayTracingRenderer.class.cast(renderer);
+//		if(renderer instanceof RayTracingRenderer) {
+//			final RayTracingRenderer rayTracingRenderer = RayTracingRenderer.class.cast(renderer);
 			
-			final
-			Scene scene = rayTracingRenderer.getScene();
-		}
+//			final Scene scene = rayTracingRenderer.getScene();
+//		}
 	}
 	
 	private void doConfigureSimpleCamera() {
@@ -206,6 +282,38 @@ public final class Main extends ConcurrentApplication implements KeyboardObserve
 			simpleCamera.setEye(new Point(50.0D, 42.0D, 295.6D));
 //			simpleCamera.setLookAt(new Point(50.0D, 42.0D, 295.5D));
 			simpleCamera.calculateOrthonormalBasis();
+		}
+	}
+	
+	private void doRotateCameraAlongX(final double x) {
+		final Renderer renderer = getRenderer();
+		
+		if(renderer instanceof RayTracingRenderer) {
+			final RayTracingRenderer rayTracingRenderer = RayTracingRenderer.class.cast(renderer);
+			
+			final Camera camera = rayTracingRenderer.getCamera();
+			
+			final Transform transform = camera.getCameraToWorld();
+			
+			transform.set(transform.multiply(Transform.rotateX(x)));
+			
+			doClear();
+		}
+	}
+	
+	private void doRotateCameraAlongY(final double y) {
+		final Renderer renderer = getRenderer();
+		
+		if(renderer instanceof RayTracingRenderer) {
+			final RayTracingRenderer rayTracingRenderer = RayTracingRenderer.class.cast(renderer);
+			
+			final Camera camera = rayTracingRenderer.getCamera();
+			
+			final Transform transform = camera.getCameraToWorld();
+			
+			transform.set(transform.multiply(Transform.rotateY(y)));
+			
+			doClear();
 		}
 	}
 }
