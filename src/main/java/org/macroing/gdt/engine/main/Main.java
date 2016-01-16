@@ -21,7 +21,9 @@ package org.macroing.gdt.engine.main;
 import org.macroing.gdt.engine.application.Application;
 import org.macroing.gdt.engine.application.concurrent.ConcurrentApplication;
 import org.macroing.gdt.engine.camera.Camera;
+import org.macroing.gdt.engine.camera.NewSimpleCamera;
 import org.macroing.gdt.engine.camera.OldSimpleCamera;
+import org.macroing.gdt.engine.camera.PerspectiveCamera;
 import org.macroing.gdt.engine.camera.SimpleCamera;
 import org.macroing.gdt.engine.display.Display;
 import org.macroing.gdt.engine.display.PixelIterable;
@@ -53,6 +55,7 @@ import org.macroing.gdt.engine.renderer.Renderer;
  * @author J&#246;rgen Lundgren
  */
 public final class Main extends ConcurrentApplication implements KeyboardObserver, MouseObserver {
+	private static final CameraType CAMERA_TYPE = CameraType.SIMPLE_CAMERA;
 	private static final String ID_CHECK_BOX_REALTIME_RENDERING = "CheckBox.RealtimeRendering";
 	private static final String ID_LABEL_SAMPLES = "Label.Samples";
 	private static final String ID_LABEL_SAMPLES_PER_SECOND = "Label.SamplesPerSecond";
@@ -71,6 +74,7 @@ public final class Main extends ConcurrentApplication implements KeyboardObserve
 	@Override
 	protected void configure() {
 		doConfigureCamera();
+		doConfigurePathTracingRenderer();
 		doConfigureScene();
 		doConfigureSimpleCamera();
 		doConfigureDisplay();
@@ -182,38 +186,48 @@ public final class Main extends ConcurrentApplication implements KeyboardObserve
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	private void doAdjustCamera(final double x, final double y, final double z) {
-		final Renderer renderer = getRenderer();
-		
-		if(renderer instanceof RayTracingRenderer) {
-			final RayTracingRenderer rayTracingRenderer = RayTracingRenderer.class.cast(renderer);
+		if(CAMERA_TYPE == CameraType.CAMERA) {
+			final Renderer renderer = getRenderer();
 			
-			final Camera camera = rayTracingRenderer.getCamera();
-			
-			final Transform transform = camera.getCameraToWorld();
-			
-			transform.set(transform.multiply(Transform.translate(x, y, z)));
-			
-			doClear();
+			if(renderer instanceof RayTracingRenderer) {
+				final RayTracingRenderer rayTracingRenderer = RayTracingRenderer.class.cast(renderer);
+				
+				final Camera camera = rayTracingRenderer.getCamera();
+				
+				if(camera instanceof PerspectiveCamera) {
+					final PerspectiveCamera perspectiveCamera = PerspectiveCamera.class.cast(camera);
+					
+					final
+					Point point = perspectiveCamera.getOrigin();
+					point.add(x, y, z);
+				} else {
+					final Transform transform = camera.getCameraToWorld();
+					
+					transform.set(transform.multiply(Transform.translate(x, y, z)));
+				}
+				
+				doClear();
+			}
 		}
 	}
 	
 	private void doAdjustSimpleCamera(final double x, final double y, final double z) {
-		/*
-		final Renderer renderer = getRenderer();
-		
-		if(renderer instanceof RayTracingRenderer) {
-			final RayTracingRenderer rayTracingRenderer = RayTracingRenderer.class.cast(renderer);
+		if(CAMERA_TYPE == CameraType.SIMPLE_CAMERA) {
+			final Renderer renderer = getRenderer();
 			
-			final SimpleCamera simpleCamera = rayTracingRenderer.getSimpleCamera();
-			
-			final Point eye = simpleCamera.getEye();
-			
-			simpleCamera.setEye(new Point(eye.getX() + x, eye.getY() + y, eye.getZ() + z));
-			simpleCamera.calculateOrthonormalBasis();
-			
-			doClear();
+			if(renderer instanceof RayTracingRenderer) {
+				final RayTracingRenderer rayTracingRenderer = RayTracingRenderer.class.cast(renderer);
+				
+				final SimpleCamera simpleCamera = rayTracingRenderer.getSimpleCamera();
+				
+				final Point eye = simpleCamera.getEye();
+				
+				simpleCamera.setEye(new Point(eye.getX() + x, eye.getY() + y, eye.getZ() + z));
+				simpleCamera.calculateOrthonormalBasis();
+				
+				doClear();
+			}
 		}
-		*/
 	}
 	
 	private void doClear() {
@@ -229,21 +243,23 @@ public final class Main extends ConcurrentApplication implements KeyboardObserve
 	}
 	
 	private void doConfigureCamera() {
-		final Renderer renderer = getRenderer();
-		
-		if(renderer instanceof RayTracingRenderer) {
-			final RayTracingRenderer rayTracingRenderer = RayTracingRenderer.class.cast(renderer);
+		if(CAMERA_TYPE == CameraType.CAMERA) {
+			final Renderer renderer = getRenderer();
 			
-			final Camera camera = rayTracingRenderer.getCamera();
-			
-			final Point source = Point.valueOf(50.0D, 42.0D, 295.6D);//Point.zero();
-			final Point target = new Point(0.0D, 0.0D, -2.0D);
-			
-			final Vector up = Vector.y();
-			
-			final
-			Transform transform = camera.getCameraToWorld();
-			transform.set(Transform.lookAt(source, target, up));
+			if(renderer instanceof RayTracingRenderer) {
+				final RayTracingRenderer rayTracingRenderer = RayTracingRenderer.class.cast(renderer);
+				
+				final Camera camera = rayTracingRenderer.getCamera();
+				
+				final Point source = Point.valueOf(50.0D, 42.0D, 295.6D);//Point.zero();
+				final Point target = new Point(0.0D, 0.0D, -2.0D);
+				
+				final Vector up = Vector.y();
+				
+				final
+				Transform transform = camera.getCameraToWorld();
+				transform.set(Transform.lookAt(source, target, up));
+			}
 		}
 	}
 	
@@ -256,64 +272,99 @@ public final class Main extends ConcurrentApplication implements KeyboardObserve
 			wickedDisplay.getConfiguration().setRenderingInRealtime(wickedDisplay.getCheckBox(ID_CHECK_BOX_REALTIME_RENDERING).isSelected());
 			wickedDisplay.getConfiguration().setDepthUntilProbabilisticallyTerminatingRay(wickedDisplay.getCheckBox(ID_CHECK_BOX_REALTIME_RENDERING).isSelected() ? 2 : 5);
 			wickedDisplay.getConfiguration().setSkippingProbabilisticallyTerminatingRay(wickedDisplay.getCheckBox(ID_CHECK_BOX_REALTIME_RENDERING).isSelected());
+			
+			doConfigureSimpleCamera();
 		});
 //		wickedDisplay.addLabel(ID_LABEL_SAMPLES).getLabel(ID_LABEL_SAMPLES).setLocation(10, 50).setText("Samples: 0");
 //		wickedDisplay.addLabel(ID_LABEL_SAMPLES_PER_SECOND).getLabel(ID_LABEL_SAMPLES_PER_SECOND).setLocation(10, 70).setText("Samples per second: 0");
 	}
 	
-	private void doConfigureScene() {
-//		final Renderer renderer = getRenderer();
+	private void doConfigurePathTracingRenderer() {
+		final Renderer renderer = getRenderer();
 		
-//		if(renderer instanceof RayTracingRenderer) {
-//			final RayTracingRenderer rayTracingRenderer = RayTracingRenderer.class.cast(renderer);
-			
-//			final Scene scene = rayTracingRenderer.getScene();
-//		}
+		if(renderer instanceof PathTracingRenderer) {
+			final
+			PathTracingRenderer pathTracingRenderer = PathTracingRenderer.class.cast(renderer);
+			pathTracingRenderer.setUsingSimpleCamera(CAMERA_TYPE == CameraType.SIMPLE_CAMERA);
+		}
+	}
+	
+	private void doConfigureScene() {
+		
 	}
 	
 	private void doConfigureSimpleCamera() {
-		final Renderer renderer = getRenderer();
-		
-		if(renderer instanceof RayTracingRenderer) {
-			final RayTracingRenderer rayTracingRenderer = RayTracingRenderer.class.cast(renderer);
+		if(CAMERA_TYPE == CameraType.SIMPLE_CAMERA) {
+			final Renderer renderer = getRenderer();
 			
-			final
-			SimpleCamera simpleCamera = rayTracingRenderer.getSimpleCamera();
-			simpleCamera.setEye(new Point(50.0D, 42.0D, 295.6D));
-//			simpleCamera.setLookAt(new Point(50.0D, 42.0D, 295.5D));
-			simpleCamera.calculateOrthonormalBasis();
+			if(renderer instanceof RayTracingRenderer) {
+				final RayTracingRenderer rayTracingRenderer = RayTracingRenderer.class.cast(renderer);
+				
+				final SimpleCamera simpleCamera = rayTracingRenderer.getSimpleCamera();
+				
+				if(simpleCamera instanceof NewSimpleCamera) {
+					final
+					NewSimpleCamera newSimpleCamera = NewSimpleCamera.class.cast(simpleCamera);
+					newSimpleCamera.setEye(new Point(50.0D, 42.0D, 155.6D));
+					newSimpleCamera.setLookAt(new Point(50.0D, 42.0D, getDisplay().getConfiguration().isRenderingInRealtime() ? -800.0D : -800.0D));
+					newSimpleCamera.setViewPlaneDistance(getDisplay().getConfiguration().isRenderingInRealtime() ? 800.0D : 800.0D);
+					newSimpleCamera.calculateOrthonormalBasis();
+				} else if(simpleCamera instanceof OldSimpleCamera) {
+					final
+					OldSimpleCamera oldSampleCamera = OldSimpleCamera.class.cast(simpleCamera);
+					oldSampleCamera.setEye(new Point(50.0D, 42.0D, 295.6D));
+					oldSampleCamera.calculateOrthonormalBasis();
+				}
+			}
 		}
 	}
 	
 	private void doRotateCameraAlongX(final double x) {
-		final Renderer renderer = getRenderer();
-		
-		if(renderer instanceof RayTracingRenderer) {
-			final RayTracingRenderer rayTracingRenderer = RayTracingRenderer.class.cast(renderer);
+		if(CAMERA_TYPE == CameraType.CAMERA) {
+			final Renderer renderer = getRenderer();
 			
-			final Camera camera = rayTracingRenderer.getCamera();
-			
-			final Transform transform = camera.getCameraToWorld();
-			
-			transform.set(transform.multiply(Transform.rotateX(x)));
-			
-			doClear();
+			if(renderer instanceof RayTracingRenderer) {
+				final RayTracingRenderer rayTracingRenderer = RayTracingRenderer.class.cast(renderer);
+				
+				final Camera camera = rayTracingRenderer.getCamera();
+				
+				final Transform transform = camera.getCameraToWorld();
+				
+				transform.set(transform.multiply(Transform.rotateX(x)));
+				
+				doClear();
+			}
 		}
 	}
 	
 	private void doRotateCameraAlongY(final double y) {
-		final Renderer renderer = getRenderer();
+		if(CAMERA_TYPE == CameraType.CAMERA) {
+			final Renderer renderer = getRenderer();
+			
+			if(renderer instanceof RayTracingRenderer) {
+				final RayTracingRenderer rayTracingRenderer = RayTracingRenderer.class.cast(renderer);
+				
+				final Camera camera = rayTracingRenderer.getCamera();
+				
+				final Transform transform = camera.getCameraToWorld();
+				
+				transform.set(transform.multiply(Transform.rotateY(y)));
+				
+				doClear();
+			}
+		}
+	}
+	
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	private static enum CameraType {
+		CAMERA,
+		SIMPLE_CAMERA;
 		
-		if(renderer instanceof RayTracingRenderer) {
-			final RayTracingRenderer rayTracingRenderer = RayTracingRenderer.class.cast(renderer);
+		////////////////////////////////////////////////////////////////////////////////////////////////////
+		
+		private CameraType() {
 			
-			final Camera camera = rayTracingRenderer.getCamera();
-			
-			final Transform transform = camera.getCameraToWorld();
-			
-			transform.set(transform.multiply(Transform.rotateY(y)));
-			
-			doClear();
 		}
 	}
 }

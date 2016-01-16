@@ -105,6 +105,15 @@ public final class PerspectiveCamera extends ProjectiveCamera {
 	}
 	
 	/**
+	 * Returns the {@code Point} denoting the origin for this {@code PerspectiveCamera} instance.
+	 * 
+	 * @return the {@code Point} denoting the origin for this {@code PerspectiveCamera} instance
+	 */
+	public Point getOrigin() {
+		return this.origin;
+	}
+	
+	/**
 	 * Returns a newly generated {@code Ray} given a {@code Sample}.
 	 * <p>
 	 * If {@code sample} is {@code null}, a {@code NullPointerException} will be thrown.

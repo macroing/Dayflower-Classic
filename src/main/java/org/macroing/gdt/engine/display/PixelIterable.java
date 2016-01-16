@@ -36,15 +36,19 @@ import java.util.NoSuchElementException;
  */
 public final class PixelIterable implements Iterable<Pixel> {
 	private final int height;
+	private final int heightScaled;
 	private final int width;
+	private final int widthScaled;
 	private final Map<Integer, Pixel> pixelMap;
 	private final Pixel[] pixels;
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	private PixelIterable(final int width, final int height, final Map<Integer, Pixel> pixelMap, final Pixel[] pixels) {
+	private PixelIterable(final int width, final int height, final int widthScaled, final int heightScaled, final Map<Integer, Pixel> pixelMap, final Pixel[] pixels) {
 		this.width = width;
 		this.height = height;
+		this.widthScaled = widthScaled;
+		this.heightScaled = heightScaled;
 		this.pixelMap = pixelMap;
 		this.pixels = pixels;
 	}
@@ -82,12 +86,30 @@ public final class PixelIterable implements Iterable<Pixel> {
 	}
 	
 	/**
+	 * Returns the scaled height of the screen that was used in the creation process.
+	 * 
+	 * @return the scaled height of the screen that was used in the creation process
+	 */
+	public int getHeightScaled() {
+		return this.heightScaled;
+	}
+	
+	/**
 	 * Returns the width of the screen that was used in the creation process.
 	 * 
 	 * @return the width of the screen that was used in the creation process
 	 */
 	public int getWidth() {
 		return this.width;
+	}
+	
+	/**
+	 * Returns the scaled width of the screen that was used in the creation process.
+	 * 
+	 * @return the scaled width of the screen that was used in the creation process
+	 */
+	public int getWidthScaled() {
+		return this.widthScaled;
 	}
 	
 	/**
@@ -133,7 +155,7 @@ public final class PixelIterable implements Iterable<Pixel> {
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	/**
-	 * Returns a {@code List} of {@code PixelIterable}s given a screen width, a screen height, an underlying RGB-data array and the size of the returned {@code List}.
+	 * Returns a {@code List} of {@code PixelIterable}s given a screen width, a screen height, a scaled screen width, a scaled screen height, an underlying RGB-data array and the size of the returned {@code List}.
 	 * <p>
 	 * If {@code rGB} is {@code null}, a {@code NullPointerException} will be thrown.
 	 * <p>
@@ -144,17 +166,19 @@ public final class PixelIterable implements Iterable<Pixel> {
 	 * 
 	 * @param width the width of the screen
 	 * @param height the height of the screen
+	 * @param widthScaled the scaled width of the screen
+	 * @param heightScaled the scaled height of the screen
 	 * @param rGB the underlying RGB-data array
 	 * @param size the size of the returned {@code List}
-	 * @return a {@code List} of {@code PixelIterable}s given a screen width, a screen height, an underlying RGB-data array and the size of the returned {@code List}
+	 * @return a {@code List} of {@code PixelIterable}s given a screen width, a screen height, a scaled screen width, a scaled screen height, an underlying RGB-data array and the size of the returned {@code List}
 	 * @throws IllegalArgumentException thrown if, and only if, {@code rGB.length % size != 0}
 	 * @throws NullPointerException thrown if, and only if, {@code rGB} is {@code null}
 	 */
-	public static List<PixelIterable> createPixelIterablesFor(final int width, final int height, final int[] rGB, final int size) {
+	public static List<PixelIterable> createPixelIterablesFor(final int width, final int height, final int widthScaled, final int heightScaled, final int[] rGB, final int size) {
 		if(rGB.length % size == 0) {
 			final int sizeOfPixelArray = rGB.length / size;
 			
-			final List<Pixel> pixelList = Pixel.createPixelsFor(width, height, rGB);
+			final List<Pixel> pixelList = Pixel.createPixelsFor(widthScaled, heightScaled, rGB);
 			final List<PixelIterable> pixelIterableList = new ArrayList<>(size);
 			
 			Collections.shuffle(pixelList);
@@ -172,7 +196,7 @@ public final class PixelIterable implements Iterable<Pixel> {
 					pixelArray[k] = pixel;
 				}
 				
-				final PixelIterable pixelIterable = new PixelIterable(width, height, pixelMap, pixelArray);
+				final PixelIterable pixelIterable = new PixelIterable(width, height, widthScaled, heightScaled, pixelMap, pixelArray);
 				
 				pixelIterableList.add(pixelIterable);
 			}
@@ -191,7 +215,7 @@ public final class PixelIterable implements Iterable<Pixel> {
 	 * @return an empty {@code PixelIterable} instance
 	 */
 	public static PixelIterable empty() {
-		return new PixelIterable(0, 0, new LinkedHashMap<>(), new Pixel[0]);
+		return new PixelIterable(0, 0, 0, 0, new LinkedHashMap<>(), new Pixel[0]);
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////

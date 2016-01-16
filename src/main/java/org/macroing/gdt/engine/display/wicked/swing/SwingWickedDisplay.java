@@ -381,7 +381,7 @@ public final class SwingWickedDisplay extends WickedDisplay {
 		final int[] rGB = toRGB(bufferedImage);
 		
 		this.pixelIterables.clear();
-		this.pixelIterables.addAll(PixelIterable.createPixelIterablesFor(widthScaled, heightScaled, rGB, SWING_WORKER_COUNT));
+		this.pixelIterables.addAll(PixelIterable.createPixelIterablesFor(width, height, widthScaled, heightScaled, rGB, SWING_WORKER_COUNT));
 		
 		this.bufferedImageJPanel.setBufferedImage(bufferedImage);
 		this.bufferedImageJPanel.setConfiguration(configuration);

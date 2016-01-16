@@ -29,6 +29,7 @@ import org.macroing.gdt.engine.geometry.Vector;
 
 //TODO: This NewSimpleCamera class will be replaced with the Camera class and its subclasses in the future.
 public final class NewSimpleCamera extends SimpleCamera {
+	private double viewPlaneDistance = 800.0D;
 	private Point lookAt = Point.zero();
 	private Vector u = Vector.zero();
 	private Vector v = Vector.zero();
@@ -42,13 +43,17 @@ public final class NewSimpleCamera extends SimpleCamera {
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
+	public double getViewPlaneDistance() {
+		return this.viewPlaneDistance;
+	}
+	
 	public Point getLookAt() {
 		return this.lookAt;
 	}
 	
 	@Override
 	public Ray newRay(final double u, final double v) {
-		final Vector direction = this.u.copyAndMultiply(u).add(this.v.copyAndMultiply(v)).subtract(this.w.copyAndMultiply(1.0D)).normalize();
+		final Vector direction = this.u.copyAndMultiply(u).add(this.v.copyAndMultiply(v)).subtract(this.w.copyAndMultiply(this.viewPlaneDistance)).normalize();
 		
 		final Point origin = getEye();
 		
@@ -68,6 +73,10 @@ public final class NewSimpleCamera extends SimpleCamera {
 	
 	public void setLookAt(final Point lookAt) {
 		this.lookAt = Objects.requireNonNull(lookAt, "lookAt == null");
+	}
+	
+	public void setViewPlaneDistance(final double viewPlaneDistance) {
+		this.viewPlaneDistance = viewPlaneDistance;
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////

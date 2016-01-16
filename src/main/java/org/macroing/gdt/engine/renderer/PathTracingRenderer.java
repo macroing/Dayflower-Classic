@@ -18,6 +18,7 @@
  */
 package org.macroing.gdt.engine.renderer;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BooleanSupplier;
@@ -50,6 +51,7 @@ public final class PathTracingRenderer extends RayTracingRenderer {
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
+	private final AtomicBoolean isUsingSimpleCamera = new AtomicBoolean(true);
 	private final AtomicInteger pass = new AtomicInteger();
 	private final AtomicLong elapsedTimeMillis = new AtomicLong();
 	private final AtomicLong initialTimeMillis = new AtomicLong();
@@ -60,6 +62,10 @@ public final class PathTracingRenderer extends RayTracingRenderer {
 	
 	private PathTracingRenderer() {
 		doReset();
+	}
+	
+	public boolean isUsingSimpleCamera() {
+		return this.isUsingSimpleCamera.get();
 	}
 	
 	/**
@@ -80,89 +86,18 @@ public final class PathTracingRenderer extends RayTracingRenderer {
 	 */
 	@Override
 	public void render(final PixelIterable pixelIterable, final RendererObserver rendererObserver, final BooleanSupplier booleanSupplier) {
-		final int width = pixelIterable.getWidth();
-		final int height = pixelIterable.getHeight();
-		
-		final double widthReciprocal = 1.0D / width;
-		final double heightReciprocal = 1.0D / height;
-		
-		final SimpleCamera simpleCamera = getSimpleCamera();
-		
-		final Camera camera = getCamera();
-		
-		final PRNG pRNG = getPRNG();
-		
-		final Scene scene = getScene();
-		
-		final
-		Intersection intersection = Intersection.newInstance();
-		intersection.setScene(scene);
-		
-		final int pass = this.pass.getAndIncrement();
-		
-		for(final Pixel pixel : pixelIterable) {
-			if(booleanSupplier.getAsBoolean()) {
-				doReset();
-				
-				return;
-			}
-			
-			final int x = pixel.getX();
-			final int y = pixel.getY();
-			
-			final
-			Sample sample = Sample.newInstance();
-			sample.setX(x);
-			sample.setY(y);
-			
-//			for(int sampleY = 0; sampleY < SAMPLE_FILTER_Y; sampleY++) {
-//				for(int sampleX = 0; sampleX < SAMPLE_FILTER_X; sampleX++) {
-//					for(int sample = 0; sample < SAMPLES; sample++) {
-						final double randomX = 2.0D * pRNG.nextDouble();//[0.0D, 2.0D)
-						final double randomY = 2.0D * pRNG.nextDouble();//[0.0D, 2.0D)
-						
-						final double dx = randomX < 1.0D ? Math.sqrt(randomX) - 1.0D : 1.0D -Math.sqrt(2.0D - randomX);//this.filter.evaluate(randomX, randomX);
-						final double dy = randomY < 1.0D ? Math.sqrt(randomY) - 1.0D : 1.0D -Math.sqrt(2.0D - randomY);//this.filter.evaluate(randomY, randomY);
-						
-						final double u = ((/*sampleX +*/ 0.5D + dx) * 0.5D + x) * widthReciprocal - 0.5D;
-						final double v = ((/*sampleY +*/ 0.5D + dy) * 0.5D + y) * heightReciprocal - 0.5D;
-//						final double u = (0.5D + x) * widthReciprocal - 0.5D;
-//						final double v = (0.5D + y) * heightReciprocal - 0.5D;
-						
-//						System.out.printf("U=%f, V=%f%n", u, v);
-						
-						sample.setU(u);
-						sample.setV(v);
-						
-						final Ray ray = camera.newRay(sample);
-//						final Ray ray = simpleCamera.newRay(u, v);//(-0.5D, 0.5D), (-0.5D, 0.5D)?
-						
-						intersection.setDistance(Constants.INFINITY);
-						intersection.setRay(ray);
-						
-						final Spectrum spectrum = scene.radiance(pass, intersection, pRNG);
-						
-						pixel.addSubSamples(1);
-						pixel.getRGBSpectrum().add(spectrum);
-//					}
-//				}
-//			}
-			
-			rendererObserver.update(pixel);
-		}
-		
-		final long initialTimeMillis = this.initialTimeMillis.get();
-		final long elapsedTimeMillis = this.elapsedTimeMillis.updateAndGet(millis -> System.currentTimeMillis() - initialTimeMillis);
-		
-		final double samples = this.samples.addAndGet(SAMPLE_FILTER_Y * SAMPLE_FILTER_X) * SAMPLES_PER_THREAD_RECIPROCAL;
-		final double samplesPerSecond = samples / (elapsedTimeMillis / 1000L);
-		
-		System.out.printf("Samples: %.2f Samples Per Second: %.2f%n", Double.valueOf(samples), Double.valueOf(samplesPerSecond));
+		doRenderUsingCamera(pixelIterable, rendererObserver, booleanSupplier);
+		doRenderUsingSimpleCamera(pixelIterable, rendererObserver, booleanSupplier);
+		doUpdateSamples();
 	}
 	
 	@Override
 	public void resetPass() {
 		this.pass.set(0);
+	}
+	
+	public void setUsingSimpleCamera(final boolean isUsingSimpleCamera) {
+		this.isUsingSimpleCamera.set(isUsingSimpleCamera);
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -178,10 +113,144 @@ public final class PathTracingRenderer extends RayTracingRenderer {
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	
+	private void doRenderUsingCamera(final PixelIterable pixelIterable, final RendererObserver rendererObserver, final BooleanSupplier booleanSupplier) {
+		if(!isUsingSimpleCamera()) {
+			final int widthScaled = pixelIterable.getWidthScaled();
+			final int heightScaled = pixelIterable.getHeightScaled();
+			
+			final double widthScaledReciprocal = 1.0D / widthScaled;
+			final double heightScaledReciprocal = 1.0D / heightScaled;
+			
+			final Camera camera = getCamera();
+			
+			final PRNG pRNG = getPRNG();
+			
+			final Scene scene = getScene();
+			
+			final
+			Intersection intersection = Intersection.newInstance();
+			intersection.setScene(scene);
+			
+			final int pass = this.pass.getAndIncrement();
+			
+			for(final Pixel pixel : pixelIterable) {
+				if(booleanSupplier.getAsBoolean()) {
+					doReset();
+					
+					return;
+				}
+				
+				final int x = pixel.getX();
+				final int y = pixel.getY();
+				
+				final
+				Sample sample = Sample.newInstance();
+				sample.setX(x);
+				sample.setY(y);
+				
+				for(int sampleY = 0; sampleY < SAMPLE_FILTER_Y; sampleY++) {
+					for(int sampleX = 0; sampleX < SAMPLE_FILTER_X; sampleX++) {
+						for(int sample0 = 0; sample0 < SAMPLES; sample0++) {
+							final double randomX = 2.0D * pRNG.nextDouble();//[0.0D, 2.0D)
+							final double randomY = 2.0D * pRNG.nextDouble();//[0.0D, 2.0D)
+							
+							final double dx = randomX < 1.0D ? Math.sqrt(randomX) - 1.0D : 1.0D -Math.sqrt(2.0D - randomX);//this.filter.evaluate(randomX, randomX);
+							final double dy = randomY < 1.0D ? Math.sqrt(randomY) - 1.0D : 1.0D -Math.sqrt(2.0D - randomY);//this.filter.evaluate(randomY, randomY);
+							
+							final double u = ((sampleX + 0.5D + dx) * 0.5D + x) * widthScaledReciprocal - 0.5D;
+							final double v = ((sampleY + 0.5D + dy) * 0.5D + y) * heightScaledReciprocal - 0.5D;
+							
+							sample.setU(u);
+							sample.setV(v);
+							
+							final Ray ray = camera.newRay(sample);
+							
+							intersection.setDistance(Constants.INFINITY);
+							intersection.setRay(ray);
+							
+							final Spectrum spectrum = scene.radiance(pass, intersection, pRNG);
+							
+							pixel.addSubSamples(1);
+							pixel.getRGBSpectrum().add(spectrum);
+						}
+					}
+				}
+				
+				rendererObserver.update(pixel);
+			}
+		}
+	}
+	
+	private void doRenderUsingSimpleCamera(final PixelIterable pixelIterable, final RendererObserver rendererObserver, final BooleanSupplier booleanSupplier) {
+		if(isUsingSimpleCamera()) {
+			final int width = pixelIterable.getWidth();
+			final int height = pixelIterable.getHeight();
+			final int widthScaled = pixelIterable.getWidthScaled();
+			final int heightScaled = pixelIterable.getHeightScaled();
+			
+			final double widthScaledReciprocal = 1.0D / widthScaled;
+			final double heightScaledReciprocal = 1.0D / heightScaled;
+			
+			final SimpleCamera simpleCamera = getSimpleCamera();
+			
+			final PRNG pRNG = getPRNG();
+			
+			final Scene scene = getScene();
+			
+			final
+			Intersection intersection = Intersection.newInstance();
+			intersection.setScene(scene);
+			
+			final int pass = this.pass.getAndIncrement();
+			
+			for(final Pixel pixel : pixelIterable) {
+				if(booleanSupplier.getAsBoolean()) {
+					doReset();
+					
+					return;
+				}
+				
+				final int x = pixel.getX();
+				final int y = pixel.getY();
+				
+				final double randomX = 2.0D * pRNG.nextDouble();//[0.0D, 2.0D)
+				final double randomY = 2.0D * pRNG.nextDouble();//[0.0D, 2.0D)
+				
+				final double dx = randomX < 1.0D ? Math.sqrt(randomX) - 1.0D : 1.0D -Math.sqrt(2.0D - randomX);
+				final double dy = randomY < 1.0D ? Math.sqrt(randomY) - 1.0D : 1.0D -Math.sqrt(2.0D - randomY);
+				
+				final double u = x - width / 2.0D + 0.5D;//((0.5D + dx) * 0.5D + x) * widthScaledReciprocal - 0.5D;
+				final double v = y - height / 2.0D + 0.5D;//((0.5D + dy) * 0.5D + y) * heightScaledReciprocal - 0.5D;
+				
+				final Ray ray = simpleCamera.newRay(u, v);//(-0.5D, 0.5D), (-0.5D, 0.5D)?
+				
+				intersection.setDistance(Constants.INFINITY);
+				intersection.setRay(ray);
+				
+				final Spectrum spectrum = scene.radiance(pass, intersection, pRNG);
+				
+				pixel.addSubSamples(1);
+				pixel.getRGBSpectrum().add(spectrum);
+				
+				rendererObserver.update(pixel);
+			}
+		}
+	}
+	
 	private void doReset() {
 		this.pass.set(0);
 		this.elapsedTimeMillis.set(0L);
 		this.initialTimeMillis.set(System.currentTimeMillis());
 		this.samples.set(0L);
+	}
+	
+	private void doUpdateSamples() {
+		final long initialTimeMillis = this.initialTimeMillis.get();
+		final long elapsedTimeMillis = this.elapsedTimeMillis.updateAndGet(millis -> System.currentTimeMillis() - initialTimeMillis);
+		
+		final double samples = this.samples.addAndGet(SAMPLE_FILTER_Y * SAMPLE_FILTER_X) * SAMPLES_PER_THREAD_RECIPROCAL;
+		final double samplesPerSecond = samples / (elapsedTimeMillis / 1000L);
+		
+		System.out.printf("Samples: %.2f Samples Per Second: %.2f%n", Double.valueOf(samples), Double.valueOf(samplesPerSecond));
 	}
 }
