@@ -4,7 +4,7 @@ Dayflower is a library and framework for creating your own game- and graphics ap
 
 It's part of the Game Development Tools (GDT) project hosted by Macroing.org.
 
-![alt text](https://github.com/macroing/Dayflower/blob/master/Macroing.org_GDT_Engine_Dayflower_002.png "Dayflower")
+![alt text](https://github.com/macroing/Dayflower-Classic/blob/master/Macroing.org_GDT_Engine_Dayflower_002.png "Dayflower")
 
 Supported Features
 ------------------
